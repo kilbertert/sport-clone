@@ -113,3 +113,42 @@ export const competitions = [
   { name: '区校园运动会', date: '2026-10-26', days: 94, stage: '基础储备期', athletes: 18, status: '计划中' },
   { name: '省青少年速度挑战赛', date: '2026-12-12', days: 141, stage: '年度目标赛', athletes: 8, status: '计划中' },
 ]
+
+export const precisionGrades = [
+  { grade: '四年级', students: 198, pass: 94, bottleneck: '下肢柔韧与落地稳定', affected: 42, trend: '改善中', color: '#10b981' },
+  { grade: '七年级', students: 66, pass: 90, bottleneck: '30m 启动加速', affected: 18, trend: '需关注', color: '#f97316' },
+  { grade: '高一', students: 126, pass: 92, bottleneck: '速度耐力与后程保持', affected: 31, trend: '改善中', color: '#2563eb' },
+  { grade: '高二', students: 119, pass: 89, bottleneck: '左右腿力量对称', affected: 27, trend: '重点干预', color: '#ef4444' },
+]
+
+export const precisionRiskItems = [
+  { name: '吴心瑶', grade: '四年级', className: '四2班', risk: '膝踝落地稳定', level: '高', score: 52.5, action: '弱侧稳定 + 低冲击落地' },
+  { name: '朱汛', grade: '四年级', className: '四3班', risk: '左右腿不对称', level: '高', score: 49.5, action: '单腿力量 + 动作纠正' },
+  { name: '罗威', grade: '高一', className: '1班', risk: '疲劳恢复不足', level: '中', score: 46.2, action: '降低训练量，增加恢复' },
+  { name: '詹松树', grade: '高一', className: '1班', risk: '后程速度衰减', level: '中', score: 38.4, action: '速度耐力 + 节奏跑' },
+]
+
+export const precisionTalent = [
+  { name: '张书豪', school: '测试学校', grade: '高一', event: '100m 短跑', score: 92, basis: '启动加速与最高速度突出' },
+  { name: '陈泽炫', school: '测试学校', grade: '高二', event: '立定跳远', score: 89, basis: '下肢爆发与水平位移优秀' },
+  { name: '聂子菡', school: '体育东路小学', grade: '四年级', event: '纵跳 / 跳跃', score: 86, basis: '垂直爆发力同龄领先' },
+  { name: '陈俊豪', school: '观澜中学', grade: '高一', event: '200m 短跑', score: 84, basis: '速度与节奏保持均衡' },
+  { name: '刘雨桐', school: '观澜中学', grade: '高一', event: '网球敏捷', score: 81, basis: '协调性与变向潜力突出' },
+]
+
+export const projectFitProfiles = [
+  { id: '100023017', name: '张书豪', grade: '高一', event: '100m 短跑', fitScore: 96, current: '30m 1.87s', target: '100m 13.42s', status: '可进入专项', basis: '前 30m 加速与反应速度突出', path: '起跑技术 → 最高速度 → 后程保持' },
+  { id: '100023003', name: '陈泽炫', grade: '高二', event: '立定跳远', fitScore: 93, current: '纵跳 48.16cm', target: '立定跳远 2.70m', status: '强化力量', basis: '下肢爆发力与水平位移潜力高', path: '下肢力量 → 髋部发力 → 落地控制' },
+  { id: '100023016', name: '文福智', grade: '高一', event: '200m 短跑', fitScore: 88, current: '30m 1.76s', target: '200m 27.80s', status: '重点培养', basis: '速度基础好，节奏保持待提升', path: '速度耐力 → 弯道技术 → 节奏分配' },
+  { id: 'S2001', name: '陈俊豪', grade: '高一', event: '200m 短跑', fitScore: 86, current: '30m 4.63s', target: '200m 29.20s', status: '持续观察', basis: '速度与协调均衡，成长空间稳定', path: '跑姿优化 → 步频提升 → 专项耐力' },
+  { id: 'S2007', name: '刘雨桐', grade: '高一', event: '网球敏捷', fitScore: 84, current: '变向稳定性 72', target: '折返测试提升 15%', status: '跨项潜力', basis: '变向协调、反应与空间感突出', path: '启动反应 → 侧向移动 → 击球步法' },
+  { id: '151620250545', name: '余源', grade: '七年级', event: '纵跳 / 跳跃', fitScore: 79, current: '纵跳 39.38cm', target: '纵跳 46.00cm', status: '基础提升', basis: '爆发力基础可塑，需先稳固动作', path: '基础力量 → 摆臂协同 → 触地反应' },
+]
+
+export const benchmarkTrend = [
+  { phase: '当前', athlete: 1.87, benchmark: 1.78, target: 1.72 },
+  { phase: '基础期', athlete: 1.84, benchmark: 1.76, target: 1.70 },
+  { phase: '专项期', athlete: 1.79, benchmark: 1.73, target: 1.67 },
+  { phase: '赛前期', athlete: 1.74, benchmark: 1.70, target: 1.64 },
+  { phase: '目标赛', athlete: 1.70, benchmark: 1.67, target: 1.62 },
+]

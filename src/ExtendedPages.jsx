@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  AlertTriangle,
   Activity,
   Award,
   BarChart3,
@@ -35,6 +36,7 @@ import {
   SquareActivity,
   Star,
   Trophy,
+  Target,
   UploadCloud,
   Users,
   Video,
@@ -70,6 +72,11 @@ import {
   recessZones,
   researchProjects,
   researchTrend,
+  benchmarkTrend,
+  precisionGrades,
+  precisionRiskItems,
+  precisionTalent,
+  projectFitProfiles,
   teachingGroups,
   teamCandidates,
 } from './extendedData'
@@ -175,6 +182,54 @@ export function CaptureCenter({ notify }) {
         <div className="panel-heading"><h2>采集终端</h2><Button icon={RefreshCw} onClick={() => notify('终端状态已刷新')}>刷新</Button></div>
         <div className="device-list">{captureDevices.map((device) => <article key={device.id}><div className={`device-icon ${device.status === '在线' ? 'online' : ''}`}><Wifi size={19} /></div><div><strong>{device.name}</strong><span>{device.venue} · {device.id}</span><div className="device-metrics"><span><Signal size={13} />{device.signal}%</span><span><Gauge size={13} />{device.battery}%</span></div></div><Tag color={device.status === '在线' ? 'green' : 'orange'}>{device.status}</Tag></article>)}</div>
       </aside>
+    </div>
+  </>
+}
+
+export function PrecisionDashboard({ notify }) {
+  const [school, setSchool] = useState('全域学校')
+  const [grade, setGrade] = useState('全部年级')
+  const [riskFilter, setRiskFilter] = useState('全部风险')
+  const visibleRisks = precisionRiskItems.filter((item) => (riskFilter === '全部风险' || item.level === riskFilter) && (grade === '全部年级' || item.grade === grade))
+  const talentByEvent = precisionTalent.reduce((map, item) => {
+    map[item.event] = (map[item.event] || 0) + 1
+    return map
+  }, {})
+
+  function exportBrief() {
+    const rows = [
+      '精准体育系统管理简报',
+      `数据范围：${school} / ${grade}`,
+      '关键指标：受伤风险 17 人；田径人才储备 28 人；网球队人才储备 19 人',
+      '',
+      '年级,学生数,达标率,核心卡点,受影响学生,趋势',
+      ...precisionGrades.map((item) => [item.grade, item.students, `${item.pass}%`, item.bottleneck, item.affected, item.trend].join(',')),
+    ]
+    const blob = new Blob([`\ufeff${rows.join('\n')}`], { type: 'text/csv;charset=utf-8' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = '精准体育系统管理简报.csv'
+    link.click()
+    URL.revokeObjectURL(link.href)
+    notify('精准体育管理简报已导出')
+  }
+
+  return <>
+    <PageHeader title="精准体育系统" subtitle="一屏尽揽全校精准体质数据，管理决策有支撑" actions={<><Select value={school} onChange={setSchool}><option>全域学校</option><option>测试学校</option><option>体育东路小学</option><option>观澜中学</option></Select><Select value={grade} onChange={setGrade}><option>全部年级</option><option>四年级</option><option>七年级</option><option>高一</option><option>高二</option></Select><Button icon={Download} onClick={exportBrief}>导出管理简报</Button></>} />
+    <StatStrip items={[
+      { label: '受伤风险人数', value: 17, unit: '人', color: '#ef4444', hint: '高风险 5 人' },
+      { label: '田径人才储备', value: 28, unit: '人', color: '#2563eb', hint: '短跑 / 跳跃专项' },
+      { label: '网球队人才储备', value: 19, unit: '人', color: '#10b981', hint: '敏捷与协调专项' },
+      { label: '核心卡点年级', value: 3, unit: '个', color: '#f97316', hint: '需要重点干预' },
+      { label: '数据覆盖率', value: 96.4, unit: '%', color: '#7c3aed', hint: '本学期已采集' },
+    ]} />
+    <div className="precision-top-grid">
+      <section className="panel precision-risk-panel"><div className="panel-heading"><div><h2>受伤风险预警</h2><p>基于不对称率、疲劳度与落地稳定性综合评估</p></div><div className="segmented">{['全部风险', '高', '中'].map((item) => <button key={item} className={riskFilter === item ? 'active' : ''} onClick={() => setRiskFilter(item)}>{item}</button>)}</div></div><div className="risk-meter"><div className="risk-meter-ring"><strong>17</strong><span>待干预</span></div><div className="risk-meter-bars"><div><span>左右腿不对称</span><b>9 人</b><i><em style={{ width: '76%', background: '#ef4444' }} /></i></div><div><span>疲劳恢复不足</span><b>5 人</b><i><em style={{ width: '48%', background: '#f97316' }} /></i></div><div><span>落地稳定风险</span><b>3 人</b><i><em style={{ width: '30%', background: '#f59e0b' }} /></i></div></div></div><div className="table-scroll"><table><thead><tr><th>学生</th><th>年级 / 班级</th><th>主要风险</th><th>风险值</th><th>建议动作</th></tr></thead><tbody>{visibleRisks.map((item) => <tr key={item.name}><td><b>{item.name}</b></td><td>{item.grade} · {item.className}</td><td><Tag color={item.level === '高' ? 'red' : 'orange'}>{item.risk}</Tag></td><td className="danger-text"><b>{item.score}%</b></td><td>{item.action}</td></tr>)}</tbody></table></div></section>
+      <section className="panel talent-reserve-panel"><div className="panel-heading"><div><h2>专项人才储备</h2><p>从全校体测数据提取可培养人才</p></div><Tag color="purple">47 人</Tag></div><div className="talent-reserve-summary"><div><span>田径队</span><strong>28</strong><small>人 · 59.6%</small></div><div><span>网球队</span><strong>19</strong><small>人 · 40.4%</small></div></div><div className="reserve-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={precisionTalent.slice(0, 5)} layout="vertical" margin={{ top: 0, right: 25, left: 6, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" horizontal={false} /><XAxis type="number" domain={[0, 100]} hide /><YAxis type="category" dataKey="name" width={52} tick={{ fill: '#64748b', fontSize: 10 }} /><Tooltip /><Bar dataKey="score" name="潜力分" fill="#2563eb" radius={[0, 5, 5, 0]} /></BarChart></ResponsiveContainer></div><div className="reserve-event-list">{Object.entries(talentByEvent).map(([event, count]) => <div key={event}><span>{event}</span><b>{count} 人</b></div>)}</div></section>
+    </div>
+    <div className="precision-bottom-grid">
+      <section className="panel grade-bottleneck-panel"><div className="panel-heading"><div><h2>各年级体质核心卡点</h2><p>达标率、短板与影响人数同步呈现</p></div><Tag color="orange">决策重点</Tag></div><div className="table-scroll"><table><thead><tr><th>年级</th><th>样本</th><th>达标率</th><th>核心卡点</th><th>影响人数</th><th>趋势</th><th>动作</th></tr></thead><tbody>{precisionGrades.map((item) => <tr key={item.grade}><td><b>{item.grade}</b></td><td>{item.students} 人</td><td><div className="inline-progress"><span style={{ width: `${item.pass}%`, background: item.color }} /><b>{item.pass}%</b></div></td><td>{item.bottleneck}</td><td className="warning-text"><b>{item.affected} 人</b></td><td><Tag color={item.trend === '重点干预' ? 'red' : item.trend === '需关注' ? 'orange' : 'green'}>{item.trend}</Tag></td><td><button className="link-button" onClick={() => notify(`${item.grade} 已生成专项干预建议`)}>生成建议</button></td></tr>)}</tbody></table></div></section>
+      <section className="panel decision-panel"><div className="panel-heading"><div><h2>管理决策提示</h2><p>从数据到动作的优先级建议</p></div><AlertTriangle size={20} className="warning-text" /></div><div className="decision-list"><article><span className="decision-index">01</span><div><strong>先处理高风险学生</strong><p>优先安排 17 名学生进行弱侧稳定、疲劳恢复和落地动作复核。</p></div><Tag color="red">立即</Tag></article><article><span className="decision-index">02</span><div><strong>高二左右腿对称专项</strong><p>建议将高二年级纳入下一轮分层课堂，连续跟踪 4 周。</p></div><Tag color="orange">本周</Tag></article><article><span className="decision-index">03</span><div><strong>扩充网球队选才</strong><p>从敏捷、协调与反应数据中再筛选 6 名跨项潜力学生。</p></div><Tag color="green">规划</Tag></article></div><Button variant="primary" icon={FileBarChart} onClick={() => notify('校级管理驾驶舱报告已生成')}>生成校级报告</Button></section>
     </div>
   </>
 }
@@ -324,8 +379,12 @@ export function SchoolTeam({ notify }) {
   const [candidates, setCandidates] = useState(() => loadArray('sport-team-candidates', teamCandidates))
   const [event, setEvent] = useState('全部项目')
   const [tab, setTab] = useState('selection')
+  const [fitQuery, setFitQuery] = useState('')
+  const [selectedFitId, setSelectedFitId] = useState('100023017')
   useEffect(() => localStorage.setItem('sport-team-candidates', JSON.stringify(candidates)), [candidates])
   const visible = event === '全部项目' ? candidates : candidates.filter((item) => item.event === event)
+  const fitVisible = projectFitProfiles.filter((item) => !fitQuery || item.name.includes(fitQuery) || item.id.includes(fitQuery) || item.event.includes(fitQuery))
+  const selectedFit = projectFitProfiles.find((item) => item.id === selectedFitId) || projectFitProfiles[0]
 
   function toggleSelection(id) {
     setCandidates(candidates.map((item) => item.id === id ? { ...item, selected: !item.selected } : item))
@@ -338,6 +397,12 @@ export function SchoolTeam({ notify }) {
     notify('选材报告已导出')
   }
 
+  function exportFitReport() {
+    const rows = ['学号,姓名,年级,适合项目,适配度,当前情况,预期目标,状态,训练路径', ...projectFitProfiles.map((item) => [item.id, item.name, item.grade, item.event, item.fitScore, item.current, item.target, item.status, item.path].join(','))]
+    downloadText('冠军训练体系项目适配报告.csv', `\ufeff${rows.join('\n')}`, 'text/csv;charset=utf-8')
+    notify('项目适配报告已导出')
+  }
+
   return <>
     <PageHeader title="特色田径队" subtitle="AI 选材、运动员档案、周期化竞技训练与赛事备战" actions={<><Button icon={Download} onClick={exportReport}>导出选材报告</Button><Button variant="primary" icon={Plus} onClick={() => notify('已创建新一轮校队选拔批次')}>新建选拔</Button></>} />
     <StatStrip items={[
@@ -347,7 +412,8 @@ export function SchoolTeam({ notify }) {
       { label: '本周训练', value: 6, unit: '次', color: '#10b981' },
       { label: '伤病高风险', value: 1, unit: '人', color: '#ef4444' },
     ]} />
-    <div className="tabs team-tabs"><button className={tab === 'selection' ? 'active' : ''} onClick={() => setTab('selection')}>AI 选材</button><button className={tab === 'training' ? 'active' : ''} onClick={() => setTab('training')}>竞技训练</button><button className={tab === 'competition' ? 'active' : ''} onClick={() => setTab('competition')}>赛事备战</button></div>
+    <div className="tabs team-tabs"><button className={tab === 'selection' ? 'active' : ''} onClick={() => setTab('selection')}>AI 选材</button><button className={tab === 'fit' ? 'active' : ''} onClick={() => setTab('fit')}>冠军训练体系</button><button className={tab === 'training' ? 'active' : ''} onClick={() => setTab('training')}>竞技训练</button><button className={tab === 'competition' ? 'active' : ''} onClick={() => setTab('competition')}>赛事备战</button></div>
+    {tab === 'fit' && <div className="champion-layout"><section className="panel fit-table-panel"><div className="panel-heading"><div><h2>AI 项目适配报告</h2><p>直接回答“谁适合什么项目、目标是什么、当前处于什么阶段”</p></div><div><div className="search-box"><input value={fitQuery} onChange={(event) => setFitQuery(event.target.value)} placeholder="搜索学生 / 项目" /><Search size={16} /></div><Button icon={Download} onClick={exportFitReport}>导出适配报告</Button></div></div><div className="fit-callout"><Target size={19} /><div><strong>适配不是标签，而是训练决策起点</strong><p>系统综合速度、爆发力、协调、对称和风险指标，为每位孩子给出主项建议、阶段目标与优先训练路径。</p></div></div><div className="table-scroll"><table><thead><tr><th>学生</th><th>适合项目</th><th>适配度</th><th>当前情况</th><th>预期目标</th><th>培养阶段</th></tr></thead><tbody>{fitVisible.map((item) => <tr key={item.id} className={selectedFit.id === item.id ? 'selected-row' : 'clickable-row'} onClick={() => setSelectedFitId(item.id)}><td><b>{item.name}</b><small className="cell-note">{item.grade} · {item.id}</small></td><td><Tag color={item.event.includes('网球') ? 'green' : 'purple'}>{item.event}</Tag></td><td><div className="fit-score"><b>{item.fitScore}</b><span><i style={{ width: `${item.fitScore}%` }} /></span></div></td><td>{item.current}</td><td className="success-text"><b>{item.target}</b></td><td><Tag color={item.status === '可进入专项' ? 'green' : item.status === '基础提升' ? 'orange' : 'blue'}>{item.status}</Tag></td></tr>)}</tbody></table></div></section><aside className="panel fit-detail-panel"><div className="panel-heading"><div><h2>{selectedFit.name} · 目标画像</h2><p>{selectedFit.grade} · {selectedFit.id}</p></div><Tag color="gold">适配度 {selectedFit.fitScore}</Tag></div><div className="fit-hero"><div className="student-avatar">{selectedFit.name.slice(0, 1)}</div><div><strong>最适合：{selectedFit.event}</strong><p>{selectedFit.basis}</p></div></div><div className="fit-current-target"><div><span>当下情况</span><strong>{selectedFit.current}</strong><Tag color="orange">现状</Tag></div><ChevronRight size={18} /><div><span>预期目标</span><strong>{selectedFit.target}</strong><Tag color="green">目标</Tag></div></div><div className="fit-chart-title"><h3>与苏炳添速度基准的阶段对比</h3><Tag color="blue">越低越快</Tag></div><div className="fit-chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={benchmarkTrend} margin={{ top: 14, right: 12, left: -16, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="phase" tick={{ fill: '#64748b', fontSize: 10 }} /><YAxis domain={[1.55, 1.95]} tick={{ fill: '#94a3b8', fontSize: 9 }} /><Tooltip /><Legend /><Line type="monotone" dataKey="athlete" name="学生当前路径" stroke="#2563eb" strokeWidth={3} dot={{ r: 3 }} /><Line type="monotone" dataKey="benchmark" name="苏炳添基准" stroke="#ef4444" strokeDasharray="5 5" /><Line type="monotone" dataKey="target" name="阶段目标" stroke="#10b981" strokeDasharray="3 3" /></LineChart></ResponsiveContainer></div><div className="fit-path"><span>优先训练路径</span><strong>{selectedFit.path}</strong><Button variant="primary" icon={ClipboardCheck} onClick={() => notify(`已为 ${selectedFit.name} 创建 ${selectedFit.event} 训练计划`)}>生成专项计划</Button></div></aside></div>}
     {tab === 'selection' && <div className="team-selection-grid"><section className="panel table-panel"><div className="panel-heading"><div><h2>选材候选名单</h2><p>速度、爆发力、风险与专项潜力综合评估</p></div><Select value={event} onChange={setEvent}><option>全部项目</option><option>短跑</option><option>纵跳</option><option>跳远</option><option>跳跃</option></Select></div><div className="table-scroll"><table><thead><tr><th>学生</th><th>年级</th><th>建议专项</th><th>潜力分</th><th>30m</th><th>风险</th><th>操作</th></tr></thead><tbody>{visible.map((item) => <tr key={item.id}><td><b>{item.name}</b><small className="cell-note">{item.id}</small></td><td>{item.grade}</td><td><Tag color="purple">{item.event}</Tag></td><td><b className="metric-purple">{item.potential}</b></td><td>{item.sprint}s</td><td><Tag color={item.risk === '低风险' ? 'green' : 'orange'}>{item.risk}</Tag></td><td><Button variant={item.selected ? 'default' : 'primary'} onClick={() => toggleSelection(item.id)}>{item.selected ? '移出校队' : '选入校队'}</Button></td></tr>)}</tbody></table></div></section><aside className="panel athlete-profile"><div className="panel-heading"><div><h2>重点运动员档案</h2><p>张书豪 · 短跑专项</p></div><Tag color="gold">A 级潜力</Tag></div><div className="athlete-head"><div className="student-avatar">张</div><div><strong>张书豪</strong><span>高一 · 100023017</span></div><Award size={32} /></div><div className="athlete-metrics"><div><span>速度潜力</span><b>92</b><Progress value={92} /></div><div><span>爆发力</span><b>86</b><Progress value={86} /></div><div><span>训练适应</span><b>81</b><Progress value={81} /></div><div><span>伤病风险</span><b className="warning-text">中</b><Progress value={46} /></div></div><div className="selection-note"><Sparkles size={18} /><p>建议主项 100m，副项 200m。启动反应和前 30m 加速能力突出，需加强后程速度保持与踝膝稳定。</p></div></aside></div>}
     {tab === 'training' && <section className="panel cycle-panel"><div className="panel-heading"><div><h2>年度周期化训练</h2><p>赛前备战、专项强化、比赛调整与赛后恢复</p></div><Tag color="blue">2026 赛季</Tag></div><div className="cycle-track">{[
       ['基础储备期', '7-8月', 82, '力量基础、动作技术、一般耐力', 'green'],

@@ -64,6 +64,7 @@ import {
   CaptureCenter,
   HomeSchool,
   LayeredTeaching,
+  PrecisionDashboard,
   RecessProgram,
   ResearchCenter,
   SchoolTeam,
@@ -89,6 +90,7 @@ const AppContext = createContext(null)
 
 const navItems = [
   { path: '/dashboard', label: '仪表盘', icon: LayoutDashboard, section: '数据中心' },
+  { path: '/precision', label: '精准体育系统', icon: BarChart3 },
   { path: '/capture', label: 'AI采集中心', icon: Cpu },
   { path: '/students', label: '学生信息', icon: Users },
   { path: '/talent', label: '人才地图', icon: Crown },
@@ -106,6 +108,7 @@ const navItems = [
 
 const pageMeta = {
   '/dashboard': ['仪表盘', '数据域范围内的学生测试记录全景'],
+  '/precision': ['精准体育系统', '一屏尽揽全校精准体质数据，管理决策有支撑'],
   '/capture': ['AI采集中心', '无穿戴设备接入、测试批次控制与实时数据入库'],
   '/students': ['学生信息', '查看、新增、编辑学生基础信息，支持数据域过滤'],
   '/talent': ['人才地图', '基于 30m短跑 / 纵跳 / 立定跳远 + 综合潜力分的 4 大维度排行'],
@@ -322,6 +325,7 @@ function MainLayout({ path, logout }) {
 function RouteContent({ path }) {
   const { navigate, notify } = useApp()
   if (path.startsWith('/students/')) return <StudentDetail id={decodeURIComponent(path.split('/').pop())} />
+  if (path === '/precision') return <PrecisionDashboard notify={notify} navigate={navigate} />
   if (path === '/capture') return <CaptureCenter notify={notify} navigate={navigate} />
   if (path === '/students') return <StudentList />
   if (path === '/talent') return <TalentMap />

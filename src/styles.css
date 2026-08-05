@@ -376,6 +376,70 @@ tbody tr:hover { background: #fbfdff; }
 .sidebar-scrim { display: none; }
 
 /* Document roadmap modules */
+.precision-top-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr); gap: 16px; margin-bottom: 16px; align-items: start; }
+.precision-bottom-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(330px, .8fr); gap: 16px; align-items: start; }
+.precision-risk-panel, .talent-reserve-panel, .grade-bottleneck-panel, .decision-panel { min-width: 0; padding: 20px; }
+.risk-meter { display: grid; grid-template-columns: 130px 1fr; gap: 20px; align-items: center; margin-bottom: 18px; padding: 15px; background: #f8fafc; border: 1px solid #e8edf4; border-radius: 8px; }
+.risk-meter-ring { width: 104px; height: 104px; display: grid; place-content: center; text-align: center; border: 8px solid #fee2e2; border-top-color: #ef4444; border-right-color: #f97316; border-radius: 50%; }
+.risk-meter-ring strong { color: #ef4444; font-size: 26px; line-height: 1; }
+.risk-meter-ring span { margin-top: 5px; color: #64748b; font-size: 10px; }
+.risk-meter-bars { display: flex; flex-direction: column; gap: 10px; }
+.risk-meter-bars > div { display: grid; grid-template-columns: 1fr auto; gap: 5px 10px; align-items: center; }
+.risk-meter-bars span { color: #64748b; font-size: 11px; }
+.risk-meter-bars b { color: #334155; font-size: 11px; }
+.risk-meter-bars i { grid-column: 1 / -1; height: 6px; overflow: hidden; background: #e9eef5; border-radius: 3px; }
+.risk-meter-bars em { display: block; height: 100%; border-radius: inherit; }
+.talent-reserve-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.talent-reserve-summary div { padding: 12px; background: #f8fafc; border: 1px solid #e8edf4; border-radius: 7px; }
+.talent-reserve-summary span, .talent-reserve-summary strong, .talent-reserve-summary small { display: block; }
+.talent-reserve-summary span { color: #64748b; font-size: 10px; }
+.talent-reserve-summary strong { margin: 4px 0; color: #2563eb; font-size: 24px; }
+.talent-reserve-summary div:nth-child(2) strong { color: #10b981; }
+.talent-reserve-summary small { color: #94a3b8; font-size: 9px; }
+.reserve-chart { height: 180px; }
+.reserve-event-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.reserve-event-list div { display: inline-flex; align-items: center; gap: 6px; padding: 4px 7px; color: #64748b; background: #f8fafc; border: 1px solid #e8edf4; border-radius: 4px; font-size: 10px; }
+.reserve-event-list b { color: #334155; }
+.inline-progress { min-width: 120px; display: flex; align-items: center; gap: 7px; }
+.inline-progress span { width: 78px; height: 6px; display: block; overflow: hidden; background: #e9eef5; border-radius: 3px; }
+.inline-progress span::after { content: ""; display: block; height: 100%; background: inherit; border-radius: inherit; }
+.inline-progress b { color: #334155; font-size: 11px; }
+.decision-panel .panel-heading svg { margin-left: auto; }
+.decision-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 15px; }
+.decision-list article { display: grid; grid-template-columns: 34px 1fr auto; align-items: start; gap: 9px; padding: 12px 0; border-bottom: 1px solid #edf0f4; }
+.decision-list article:last-child { border-bottom: 0; }
+.decision-index { color: #2563eb; font-family: Consolas, monospace; font-size: 11px; font-weight: 700; }
+.decision-list strong { color: #334155; font-size: 12px; }
+.decision-list p { margin: 5px 0 0; color: #64748b; font-size: 10px; line-height: 1.6; }
+.decision-panel > .button { width: 100%; }
+.champion-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr); gap: 16px; align-items: start; }
+.fit-table-panel, .fit-detail-panel { min-width: 0; padding: 20px; }
+.fit-table-panel .panel-heading > div:last-child { display: flex; align-items: center; gap: 8px; }
+.fit-table-panel .search-box { width: 180px; }
+.fit-table-panel table { min-width: 760px; }
+.fit-callout { display: flex; gap: 10px; margin-bottom: 14px; padding: 13px; color: #7c3aed; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 7px; }
+.fit-callout strong { color: #6b21a8; font-size: 12px; }
+.fit-callout p { margin: 5px 0 0; color: #7e22ce; font-size: 10px; line-height: 1.6; }
+.fit-score { display: flex; align-items: center; gap: 8px; }
+.fit-score > b { color: #7c3aed; font-size: 13px; }
+.fit-score > span { width: 72px; height: 6px; display: block; overflow: hidden; background: #eee8fb; border-radius: 3px; }
+.fit-score > span i { display: block; height: 100%; background: linear-gradient(90deg, #7c3aed, #2563eb); border-radius: inherit; }
+.fit-hero { display: flex; align-items: center; gap: 12px; padding: 14px; background: #f7faff; border: 1px solid #dbeafe; border-radius: 8px; }
+.fit-hero > div:nth-child(2) { min-width: 0; }
+.fit-hero strong { color: #1e3a8a; font-size: 14px; }
+.fit-hero p { margin: 5px 0 0; color: #64748b; font-size: 10px; line-height: 1.6; }
+.fit-current-target { display: grid; grid-template-columns: 1fr 18px 1fr; align-items: center; gap: 8px; margin: 14px 0; }
+.fit-current-target > div { min-width: 0; padding: 12px; border: 1px solid #e8edf4; border-radius: 7px; }
+.fit-current-target span, .fit-current-target strong { display: block; }
+.fit-current-target span { margin-bottom: 5px; color: #94a3b8; font-size: 10px; }
+.fit-current-target strong { margin-bottom: 7px; color: #334155; font-size: 14px; }
+.fit-current-target > svg { color: #94a3b8; }
+.fit-chart-title { display: flex; align-items: center; justify-content: space-between; margin: 0 0 4px; }
+.fit-chart-title h3 { margin: 0; color: #334155; font-size: 12px; }
+.fit-chart { height: 220px; }
+.fit-path { display: grid; grid-template-columns: 90px 1fr auto; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px solid #edf0f4; }
+.fit-path > span { color: #94a3b8; font-size: 10px; }
+.fit-path > strong { color: #334155; font-size: 11px; }
 .capture-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(320px, .5fr); gap: 16px; align-items: start; }
 .capture-session, .device-panel { min-width: 0; padding: 20px; }
 .live-badge { display: inline-flex; align-items: center; gap: 7px; padding: 5px 9px; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; font-size: 11px; }
@@ -639,7 +703,7 @@ tbody tr:hover { background: #fbfdff; }
   .student-filters { grid-template-columns: 1.2fr 1fr 1fr 1fr auto auto; }
   .training-layout { grid-template-columns: minmax(0, 1fr); }
   .plan-detail { position: static; }
-  .capture-layout, .recess-grid, .homework-layout, .team-selection-grid { grid-template-columns: 1fr; }
+  .capture-layout, .recess-grid, .homework-layout, .team-selection-grid, .precision-top-grid, .precision-bottom-grid, .champion-layout { grid-template-columns: 1fr; }
   .teaching-main-grid { grid-template-columns: 1fr; }
   .points-list { grid-template-columns: repeat(2, 1fr); }
   .points-list article:nth-child(4n) { border-right: 1px solid #edf0f4; }
@@ -710,6 +774,15 @@ tbody tr:hover { background: #fbfdff; }
   .schedule-meta { gap: 9px; }
   .pagination { justify-content: flex-start; overflow-x: auto; }
   .page-size { display: none; }
+  .precision-risk-panel, .talent-reserve-panel, .grade-bottleneck-panel, .decision-panel, .fit-table-panel, .fit-detail-panel { padding: 16px; }
+  .risk-meter { grid-template-columns: 1fr; justify-items: center; }
+  .risk-meter-bars { width: 100%; }
+  .fit-table-panel .panel-heading > div:last-child { width: 100%; flex-wrap: wrap; }
+  .fit-table-panel .search-box { flex: 1; width: auto; min-width: 150px; }
+  .fit-current-target { grid-template-columns: 1fr; }
+  .fit-current-target > svg { display: none; }
+  .fit-path { grid-template-columns: 1fr; }
+  .fit-path .button { width: 100%; }
   .capture-session, .device-panel, .lesson-panel, .roster-panel, .points-panel, .recess-flow, .zone-panel, .demo-panel, .weakness-panel, .project-panel, .homework-panel, .checkin-panel, .family-archive, .athlete-profile, .cycle-panel, .competition-card { padding: 16px; }
   .lane-grid, .teaching-group-grid, .cycle-track, .competition-grid { grid-template-columns: 1fr; }
   .capture-stream { overflow-x: auto; }
