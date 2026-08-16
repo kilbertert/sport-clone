@@ -259,7 +259,7 @@ function MainLayout({ path, logout }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const normalizedPath = path.startsWith('/students/') ? '/students' : path
+  const normalizedPath = path.startsWith('/students/') ? '/students' : (path.startsWith('/research/') ? '/research' : path)
   const meta = path.startsWith('/students/') ? ['学生分析', '学生运动能力综合分析与训练建议'] : (pageMeta[normalizedPath] || pageMeta['/dashboard'])
 
   function go(nextPath) {
@@ -335,7 +335,7 @@ function RouteContent({ path }) {
   if (path === '/training') return <TrainingPlans />
   if (path === '/schedules') return <TestSchedules />
   if (path === '/home-school') return <HomeSchool notify={notify} navigate={navigate} />
-  if (path === '/research') return <ResearchCenter notify={notify} navigate={navigate} />
+  if (path === '/research' || path.startsWith('/research/')) return <ResearchCenter path={path} notify={notify} navigate={navigate} />
   if (path === '/team') return <SchoolTeam notify={notify} navigate={navigate} />
   if (path === '/face') return <FaceManage />
   if (path === '/reports') return <Reports />

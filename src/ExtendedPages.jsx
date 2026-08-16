@@ -32,6 +32,7 @@ import {
   Search,
   Send,
   Signal,
+  ShieldCheck,
   Sparkles,
   SquareActivity,
   Star,
@@ -71,6 +72,7 @@ import {
   recessTimeline,
   recessZones,
   researchProjects,
+  researchPapers,
   researchTrend,
   benchmarkTrend,
   precisionGrades,
@@ -301,7 +303,19 @@ export function RecessProgram({ notify }) {
   </>
 }
 
-export function ResearchCenter({ notify }) {
+function ResearchSubnav({ active, navigate }) {
+  return <div className="tabs research-tabs"><button className={active === 'analysis' ? 'active' : ''} onClick={() => navigate('/research')}>科研分析</button><button className={active === 'writing' ? 'active' : ''} onClick={() => navigate('/research/writing')}>AI 写作</button><button className={active === 'scholar' ? 'active' : ''} onClick={() => navigate('/research/scholar')}>学术搜索</button></div>
+}
+
+function buildClosureDraft(form) {
+  const outline = form.outlineMode === 'AI 智能'
+    ? ['一、研究背景与目标', '二、研究设计与实施过程', '三、研究成果与证据', '四、计划对比与问题反思', '五、经费使用与团队分工', '六、结论与后续计划']
+    : form.outline.split('\n').map((item) => item.trim()).filter(Boolean)
+  const sections = outline.length ? outline : ['一、研究背景与目标', '二、研究设计与实施过程', '三、研究成果与证据', '四、结论与后续计划']
+  return [`# ${form.topic}`, '', `> 课题结题报告 · ${form.language} · ${form.size}`, '', '## 摘要', `本报告围绕“${form.topic}”梳理研究背景、实施过程、成果证据与后续计划。以下内容为 AI 辅助生成的结构化初稿，请结合原始记录、测评数据和经费凭证进行核验。`, '', ...sections.flatMap((section, index) => [section, '', index === 0 ? `本课题聚焦${form.topic}，结合学校体育教学场景明确研究问题、目标和评价指标，形成可复核的研究边界。` : index === 1 ? '课题组按照方案设计、样本采集、分层干预和阶段复测推进研究，重点记录参与对象、执行频次、工具和质量控制方式。' : index === 2 ? '研究成果包括体质指标变化、课堂执行记录、学生反馈和教师观察。建议在本节补充前后测数据、典型案例与统计方法，确保结论能够回溯到证据。' : index === 3 ? '对照原计划逐项说明完成情况、偏差原因和调整措施，区分已验证结论、阶段性发现和仍需后续跟踪的问题。' : index === 4 ? '按预算科目汇总经费使用，说明设备、材料、调研与专家指导等支出用途，并附必要的凭证和审批记录。' : '总结研究贡献、应用价值与局限，提出下一阶段的复测安排、推广条件和风险控制措施。', '']), '', '## 辅助信息', form.auxiliary || '暂无补充信息，请补充研究成果、计划对比、问题经验和后续建议。', '', '## 参考文献', form.references === 'AI 智能' ? '系统将根据课题关键词推荐并整理参考文献，正式提交前请核验作者、年份、刊名与 DOI。' : (form.referenceText || (form.referenceFiles.length ? form.referenceFiles.map((file) => `- ${file}`).join('\n') : '请上传或粘贴本课题实际使用的参考文献。'))].join('\n')
+}
+
+function ResearchAnalysis({ notify }) {
   const [projects, setProjects] = useState(() => loadArray('sport-research-projects', researchProjects))
   const [modal, setModal] = useState(false)
   const [compare, setCompare] = useState('周期对比')
@@ -340,6 +354,101 @@ export function ResearchCenter({ notify }) {
     </div>
     {modal && <Modal title="新建课题档案" onClose={() => setModal(false)} footer={<><Button onClick={() => setModal(false)}>取消</Button><Button variant="primary" onClick={createProject}>创建课题</Button></>}><div className="form-stack"><label>课题名称<input className="input" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label><label>负责人<input className="input" value={form.owner} onChange={(event) => setForm({ ...form, owner: event.target.value })} /></label><label>计划样本数<input className="input" type="number" value={form.samples} onChange={(event) => setForm({ ...form, samples: Number(event.target.value) })} /></label><label>计划结题日期<input className="input" type="date" value={form.deadline} onChange={(event) => setForm({ ...form, deadline: event.target.value })} /></label><div className="ai-hint"><GraduationCap size={20} /><p>系统将创建数据采集方案、干预组/对照组结构、周期复测节点和成果材料目录。</p></div></div></Modal>}
   </>
+}
+
+function ResearchWriting({ notify }) {
+  const carriedCitation = localStorage.getItem('sport-research-citation-draft') || ''
+  const [form, setForm] = useState({ topic: '基于精准体育数据的学校体质健康分层干预研究', outlineMode: 'AI 智能', outline: '', references: carriedCitation ? '手动上传' : 'AI 智能', referenceText: carriedCitation, referenceFiles: [], auxiliary: '补充研究成果情况、计划对比、资金使用和问题经验', language: '中文', size: '短（约4000字）' })
+  const [draft, setDraft] = useState('')
+  const [generating, setGenerating] = useState(false)
+
+  function update(field, value) {
+    setForm((current) => ({ ...current, [field]: value }))
+  }
+
+  function generateDraft() {
+    if (!form.topic.trim()) {
+      notify('请先填写科研课题', 'error')
+      return
+    }
+    setGenerating(true)
+    window.setTimeout(() => {
+      setDraft(buildClosureDraft(form))
+      setGenerating(false)
+      notify('AI 课题结题报告草稿已生成')
+    }, 350)
+  }
+
+  function copyDraft() {
+    if (!draft) return notify('请先生成报告草稿', 'error')
+    navigator.clipboard?.writeText(draft).then(() => notify('报告草稿已复制')).catch(() => notify('当前浏览器未授权剪贴板，请直接选中复制', 'error'))
+  }
+
+  function exportDraft() {
+    if (!draft) return notify('请先生成报告草稿', 'error')
+    downloadText('课题结题报告- AI辅助初稿.md', draft)
+    notify('报告草稿已导出')
+  }
+
+  return <>
+    <PageHeader title="AI 写作" subtitle="把科研课题、过程证据和参考资料整理成可核验的结题报告初稿" actions={<><Tag color="purple">本地示例工作区</Tag><Button icon={FileDown} onClick={exportDraft}>导出初稿</Button></>} />
+    <div className="writing-workbench">
+      <section className="panel writing-form-panel"><div className="panel-heading"><div><h2>课题结题报告</h2><p>参考目标模块的“输入要求 → 生成初稿 → 在线编辑”流程</p></div><Tag color="blue">6 个字段</Tag></div><div className="writing-stepper"><span className="active">1 输入要求</span><b>→</b><span className={draft ? 'active' : ''}>2 生成初稿</span><b>→</b><span>3 核验编辑</span></div><div className="form-stack writing-fields"><label>科研课题 <em>必填</em><input className="input" value={form.topic} onChange={(event) => update('topic', event.target.value)} placeholder="请输入清晰准确的科研课题" /></label><label>写作大纲 <select className="select" value={form.outlineMode} onChange={(event) => update('outlineMode', event.target.value)}><option>AI 智能</option><option>指定大纲</option></select></label>{form.outlineMode === '指定大纲' && <label>自定义大纲<textarea className="textarea" value={form.outline} onChange={(event) => update('outline', event.target.value)} placeholder="每行输入一个二级标题" /></label>}<label>参考文献 <select className="select" value={form.references} onChange={(event) => update('references', event.target.value)}><option>AI 智能</option><option>手动上传</option></select></label>{form.references === '手动上传' && <><label>引用文本<textarea className="textarea" value={form.referenceText} onChange={(event) => update('referenceText', event.target.value)} placeholder="粘贴标准引用或参考文献列表" /></label><label className="file-picker">上传参考资料 <input type="file" multiple accept=".pdf,.docx,.txt" onChange={(event) => update('referenceFiles', Array.from(event.target.files || []).map((file) => file.name))} /><span>{form.referenceFiles.length ? form.referenceFiles.join('、') : '选择 PDF、DOCX 或 TXT 文件'}</span></label></>}<label>辅助信息 <textarea className="textarea" value={form.auxiliary} onChange={(event) => update('auxiliary', event.target.value)} placeholder="研究成果、计划对比、资金使用、问题经验等" /></label><div className="form-grid two-cols"><label>写作语言 <select className="select" value={form.language} onChange={(event) => update('language', event.target.value)}><option>中文</option><option>英文</option></select></label><label>篇幅长度 <select className="select" value={form.size} onChange={(event) => update('size', event.target.value)}><option>短（约4000字）</option><option>中（约8000字）</option></select></label></div><Button variant="primary" icon={generating ? RefreshCw : Sparkles} onClick={generateDraft} disabled={generating}>{generating ? '生成中...' : '生成报告初稿'}</Button></div><div className="writing-guard"><ShieldCheck size={17} /><span>AI 只生成结构化初稿，提交前请人工核验数据、引用和经费凭证。</span></div></section>
+      <section className="panel writing-preview-panel"><div className="panel-heading"><div><h2>在线编辑区</h2><p>{draft ? '可直接编辑、复制或导出 Markdown 初稿' : '生成后在此核验正文结构和证据占位'}</p></div><div className="preview-actions"><Button icon={ClipboardCheck} onClick={copyDraft} disabled={!draft}>复制</Button><Button icon={Download} onClick={exportDraft} disabled={!draft}>导出</Button></div></div>{draft ? <textarea className="draft-editor" value={draft} onChange={(event) => setDraft(event.target.value)} /> : <div className="empty-state writing-empty"><Sparkles size={30} /><strong>等待生成报告初稿</strong><p>先完善左侧课题信息，再生成一份可编辑的结构化草稿。</p></div>}</section>
+    </div>
+  </>
+}
+
+function ResearchScholar({ notify, navigate }) {
+  const [query, setQuery] = useState('体质健康')
+  const [source, setSource] = useState('全部来源')
+  const [year, setYear] = useState('全部年份')
+  const [activeId, setActiveId] = useState(researchPapers[0].id)
+  const [knowledgeIds, setKnowledgeIds] = useState(() => loadArray('sport-research-knowledge', []))
+  const [citations, setCitations] = useState(() => loadArray('sport-research-citations', []))
+  useEffect(() => localStorage.setItem('sport-research-knowledge', JSON.stringify(knowledgeIds)), [knowledgeIds])
+  useEffect(() => localStorage.setItem('sport-research-citations', JSON.stringify(citations)), [citations])
+  const filtered = researchPapers.filter((paper) => {
+    const haystack = `${paper.title} ${paper.authors} ${paper.source} ${paper.abstract} ${paper.keywords.join(' ')}`.toLowerCase()
+    const matchesQuery = !query.trim() || haystack.includes(query.trim().toLowerCase())
+    const matchesSource = source === '全部来源' || paper.type === source
+    const matchesYear = year === '全部年份' || (year === '近三年' ? paper.year >= 2024 : paper.year >= 2022)
+    return matchesQuery && matchesSource && matchesYear
+  })
+  const activePaper = researchPapers.find((paper) => paper.id === activeId) || filtered[0] || researchPapers[0]
+
+  function search() {
+    notify(`已检索 ${filtered.length} 篇相关文献`)
+    if (filtered[0]) setActiveId(filtered[0].id)
+  }
+
+  function toggleKnowledge(id) {
+    setKnowledgeIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
+    notify(knowledgeIds.includes(id) ? '已移出科研知识库' : '已加入科研知识库')
+  }
+
+  function saveCitation(paper) {
+    if (!citations.includes(paper.id)) setCitations((current) => [...current, paper.id])
+    navigator.clipboard?.writeText(paper.citation).catch(() => {})
+    notify('引用已保存并复制')
+  }
+
+  function openWriting() {
+    if (activePaper) localStorage.setItem('sport-research-citation-draft', activePaper.citation)
+    navigate('/research/writing')
+    notify('已带入 AI 写作工作区')
+  }
+
+  return <>
+    <PageHeader title="学术搜索" subtitle="检索体育教育文献，沉淀知识库，并把可信引用带回科研写作" actions={<Tag color="green">本地示例文献库 · {researchPapers.length} 篇</Tag>} />
+    <section className="panel scholar-search-panel"><div className="scholar-searchbar"><div className="search-box"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && search()} placeholder="输入主题、关键词或作者" /></div><Button variant="primary" icon={Search} onClick={search}>搜索文献</Button></div><div className="scholar-filters"><label>来源<Select value={source} onChange={setSource}><option>全部来源</option><option>期刊论文</option><option>会议论文</option><option>学位论文</option></Select></label><label>年份<Select value={year} onChange={setYear}><option>全部年份</option><option>近三年</option><option>近五年</option></Select></label><span><BookOpenCheck size={15} />已收藏 {knowledgeIds.length} 篇 · 已保存引用 {citations.length} 条</span></div></section>
+    <div className="scholar-layout"><section className="panel scholar-results-panel"><div className="panel-heading"><div><h2>检索结果</h2><p>按相关性展示标题、来源、摘要和关键词</p></div><Tag color="blue">{filtered.length} 篇</Tag></div>{filtered.length ? <div className="paper-list">{filtered.map((paper) => <article key={paper.id} className={activePaper.id === paper.id ? 'paper-card active' : 'paper-card'} onClick={() => setActiveId(paper.id)}><div className="paper-card-head"><Tag color={paper.type === '学位论文' ? 'orange' : paper.type === '会议论文' ? 'purple' : 'blue'}>{paper.type}</Tag><span>{paper.year} · {paper.source}</span></div><h3>{paper.title}</h3><p className="paper-authors">{paper.authors}</p><p>{paper.abstract}</p><div className="paper-keywords">{paper.keywords.map((keyword) => <Tag key={keyword} color="default">{keyword}</Tag>)}</div><footer><button className="link-button" onClick={(event) => { event.stopPropagation(); toggleKnowledge(paper.id) }}>{knowledgeIds.includes(paper.id) ? '已在知识库' : '加入知识库'}</button><button className="link-button" onClick={(event) => { event.stopPropagation(); saveCitation(paper) }}>保存引用</button></footer></article>)}</div> : <div className="empty-state"><Search size={28} /><strong>没有匹配文献</strong><p>试试减少关键词或切换来源、年份筛选。</p></div>}</section><aside className="panel scholar-detail-panel"><div className="panel-heading"><div><h2>关键知识点</h2><p>选中文献的可复用结论</p></div><Tag color="green">可回溯</Tag></div><div className="paper-detail"><Tag color="blue">{activePaper.type}</Tag><h3>{activePaper.title}</h3><p className="paper-authors">{activePaper.authors} · {activePaper.source} · {activePaper.year}</p><div className="insight-box"><Sparkles size={18} /><div><strong>{activePaper.insight}</strong><p>建议在研究记录中标注原文页码、样本范围和适用边界。</p></div></div><h4>摘要</h4><p>{activePaper.abstract}</p><h4>标准引用</h4><div className="citation-box">{activePaper.citation}</div><div className="detail-actions"><Button icon={BookOpenCheck} onClick={() => toggleKnowledge(activePaper.id)}>{knowledgeIds.includes(activePaper.id) ? '移出知识库' : '加入知识库'}</Button><Button icon={ClipboardCheck} onClick={() => saveCitation(activePaper)}>复制引用</Button><Button variant="primary" icon={Sparkles} onClick={openWriting}>带入 AI 写作</Button></div></div></aside></div>
+  </>
+}
+
+export function ResearchCenter({ path, notify, navigate }) {
+  const active = path.endsWith('/writing') ? 'writing' : path.endsWith('/scholar') ? 'scholar' : 'analysis'
+  return <><ResearchSubnav active={active} navigate={navigate} />{active === 'writing' ? <ResearchWriting notify={notify} /> : active === 'scholar' ? <ResearchScholar notify={notify} navigate={navigate} /> : <ResearchAnalysis notify={notify} />}</>
 }
 
 export function HomeSchool({ notify }) {
