@@ -86,16 +86,24 @@ await desktop.page.locator('.modal').getByRole('button', { name: '创建课题' 
 if (!(await desktop.page.getByText('自动化验收科研课题').count())) errors.push('research: created project not visible')
 
 await desktop.page.goto(`${baseUrl}/research/writing`, { waitUntil: 'networkidle' })
+await desktop.page.getByRole('button', { name: /学术教育/ }).click()
+await desktop.page.getByRole('button', { name: /开题报告/ }).click()
+await desktop.page.getByLabel('标题').fill('基于精准体育数据的学校体质健康分层干预研究')
+await desktop.page.getByRole('button', { name: '开始写作' }).click()
+await desktop.page.waitForTimeout(500)
+if (!(await desktop.page.locator('.draft-editor').inputValue()).includes('基于精准体育数据')) errors.push('research/writing: generic draft was not generated')
+
+await desktop.page.goto(`${baseUrl}/research/writing/jietibaogao`, { waitUntil: 'networkidle' })
 await desktop.page.getByRole('button', { name: '生成报告初稿' }).click()
 await desktop.page.waitForTimeout(500)
-if (!(await desktop.page.locator('.draft-editor').inputValue()).includes('基于精准体育数据')) errors.push('research/writing: draft was not generated')
+if (!(await desktop.page.locator('.draft-editor').inputValue()).includes('基于精准体育数据')) errors.push('research/writing: closure draft was not generated')
 
 await desktop.page.goto(`${baseUrl}/research/scholar`, { waitUntil: 'networkidle' })
 await desktop.page.getByRole('button', { name: '搜索文献' }).click()
 await desktop.page.getByRole('button', { name: '加入知识库' }).first().click()
 if (!(await desktop.page.getByText(/已收藏 1 篇/).count())) errors.push('research/scholar: paper was not added to knowledge base')
 await desktop.page.getByRole('button', { name: '带入 AI 写作' }).click()
-if (!desktop.page.url().endsWith('/research/writing')) errors.push('research/scholar: citation did not open writing workspace')
+if (!desktop.page.url().endsWith('/research/writing/jietibaogao')) errors.push('research/scholar: citation did not open writing workspace')
 if (!(await desktop.page.getByLabel('引用文本').inputValue()).includes('智慧体育背景')) errors.push('research/scholar: citation was not carried into writing')
 
 await desktop.page.goto(`${baseUrl}/home-school`, { waitUntil: 'networkidle' })

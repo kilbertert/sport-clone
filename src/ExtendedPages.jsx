@@ -17,6 +17,7 @@ import {
   FileBarChart,
   FileDown,
   Flag,
+  FileText,
   Gauge,
   GraduationCap,
   HeartHandshake,
@@ -81,6 +82,7 @@ import {
   projectFitProfiles,
   teachingGroups,
   teamCandidates,
+  writingToolProfiles,
 } from './extendedData'
 
 function loadArray(key, fallback) {
@@ -307,12 +309,14 @@ function ResearchSubnav({ active, navigate }) {
   return <div className="tabs research-tabs"><button className={active === 'analysis' ? 'active' : ''} onClick={() => navigate('/research')}>科研分析</button><button className={active === 'writing' ? 'active' : ''} onClick={() => navigate('/research/writing')}>AI 写作</button><button className={active === 'scholar' ? 'active' : ''} onClick={() => navigate('/research/scholar')}>学术搜索</button></div>
 }
 
-function buildClosureDraft(form) {
-  const outline = form.outlineMode === 'AI 智能'
-    ? ['一、研究背景与目标', '二、研究设计与实施过程', '三、研究成果与证据', '四、计划对比与问题反思', '五、经费使用与团队分工', '六、结论与后续计划']
-    : form.outline.split('\n').map((item) => item.trim()).filter(Boolean)
-  const sections = outline.length ? outline : ['一、研究背景与目标', '二、研究设计与实施过程', '三、研究成果与证据', '四、结论与后续计划']
-  return [`# ${form.topic}`, '', `> 课题结题报告 · ${form.language} · ${form.size}`, '', '## 摘要', `本报告围绕“${form.topic}”梳理研究背景、实施过程、成果证据与后续计划。以下内容为 AI 辅助生成的结构化初稿，请结合原始记录、测评数据和经费凭证进行核验。`, '', ...sections.flatMap((section, index) => [section, '', index === 0 ? `本课题聚焦${form.topic}，结合学校体育教学场景明确研究问题、目标和评价指标，形成可复核的研究边界。` : index === 1 ? '课题组按照方案设计、样本采集、分层干预和阶段复测推进研究，重点记录参与对象、执行频次、工具和质量控制方式。' : index === 2 ? '研究成果包括体质指标变化、课堂执行记录、学生反馈和教师观察。建议在本节补充前后测数据、典型案例与统计方法，确保结论能够回溯到证据。' : index === 3 ? '对照原计划逐项说明完成情况、偏差原因和调整措施，区分已验证结论、阶段性发现和仍需后续跟踪的问题。' : index === 4 ? '按预算科目汇总经费使用，说明设备、材料、调研与专家指导等支出用途，并附必要的凭证和审批记录。' : '总结研究贡献、应用价值与局限，提出下一阶段的复测安排、推广条件和风险控制措施。', '']), '', '## 辅助信息', form.auxiliary || '暂无补充信息，请补充研究成果、计划对比、问题经验和后续建议。', '', '## 参考文献', form.references === 'AI 智能' ? '系统将根据课题关键词推荐并整理参考文献，正式提交前请核验作者、年份、刊名与 DOI。' : (form.referenceText || (form.referenceFiles.length ? form.referenceFiles.map((file) => `- ${file}`).join('\n') : '请上传或粘贴本课题实际使用的参考文献。'))].join('\n')
+function buildWritingDraft(form, profile) {
+  const customOutline = form.outline.split('\n').map((item) => item.trim()).filter(Boolean)
+  const sections = form.outlineMode === '指定大纲' && customOutline.length ? customOutline : profile.sections
+  const style = { 深奥风格: '以概念辨析和深层论证为主', 理论风格: '以理论框架和逻辑推演为主', 专业风格: '以专业、清晰、可核验为主' }[form.style] || '以专业、清晰、可核验为主'
+  const references = form.references === 'AI 智能'
+    ? '系统将根据主题推荐参考文献，正式提交前请核验作者、年份、刊名与 DOI。'
+    : (form.referenceText || (form.referenceFiles.length ? form.referenceFiles.map((file) => `- ${file}`).join('\n') : '请上传或粘贴实际使用的参考文献。'))
+  return [`# ${form.topic}`, '', `> ${profile.name} · ${form.language} · ${form.size} · ${form.style}`, '', '## 内容提要', `本文围绕“${form.topic}”展开，按照${style}的表达要求，形成一份可编辑、可复核的 ${profile.name} 结构化初稿。提交前请结合原始记录、数据和引用逐项核验。`, '', ...sections.flatMap((section, index) => [`## ${index + 1}. ${section}`, '', `本节围绕“${form.topic}”梳理${section}，建议补充真实对象、时间、数据、案例和责任人，避免将占位内容直接作为最终结论。`, index === 0 ? '研究范围、目标和评价指标应与实际方案保持一致。' : index === sections.length - 1 ? '请在本节补充可执行的结论、建议或下一阶段安排，并注明证据边界。' : '请结合过程记录、测评结果和相关材料补充本节事实依据。', '']), '', '## 辅助信息', form.auxiliary || '暂无补充信息，请补充背景、成果、问题、计划或其他写作要求。', '', '## 参考文献', references].join('\n')
 }
 
 function ResearchAnalysis({ notify }) {
@@ -356,46 +360,55 @@ function ResearchAnalysis({ notify }) {
   </>
 }
 
-function ResearchWriting({ notify }) {
+function WritingHub({ navigate }) {
+  const categories = ['推荐写作', '学术教育', '学生常用', '职场精选', '机关单位']
+  const [category, setCategory] = useState('推荐写作')
+  const [query, setQuery] = useState('')
+  const filtered = writingToolProfiles.filter((profile) => profile.category === category && `${profile.name} ${profile.description}`.includes(query.trim()))
+  const recent = loadArray('sport-writing-recent', []).map((slug) => writingToolProfiles.find((profile) => profile.slug === slug)).filter(Boolean)
+  function open(profile) {
+    navigate(`/research/writing/${profile.slug}`)
+  }
+  return <>
+    <PageHeader title="AI 写作" subtitle="选择写作类型，按截图中的统一流程生成可编辑初稿" actions={<Tag color="purple">{writingToolProfiles.length} 个工具</Tag>} />
+    <div className="writing-hub-layout">
+      <aside className="panel writing-category-panel"><div className="writing-category-title"><Sparkles size={18} /><strong>写作分类</strong></div>{categories.map((item) => <button key={item} className={category === item ? 'active' : ''} onClick={() => { setCategory(item); setQuery('') }}>{item}<span>{writingToolProfiles.filter((profile) => profile.category === item).length}</span></button>)}</aside>
+      <section className="writing-hub-main"><div className="panel writing-hub-toolbar"><div className="search-box"><Search size={16} /><input aria-label="搜索写作工具" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索其它写作类型" /></div><span>支持标题、课题、主题和辅助信息生成</span></div>{recent.length > 0 && <section className="writing-recent"><div className="section-label">最近使用</div><div className="writing-tool-grid compact">{recent.slice(0, 4).map((profile) => <button className="writing-tool-card" key={profile.slug} onClick={() => open(profile)}><FileText size={22} /><div><strong>{profile.name}</strong><p>{profile.description}</p></div></button>)}</div></section>}<section className="writing-catalog"><div className="section-label">{category}</div><div className="writing-tool-grid">{filtered.map((profile) => <button className="writing-tool-card" key={profile.slug} onClick={() => open(profile)}><span className="writing-tool-icon"><FileText size={22} /></span><div><strong>{profile.name}</strong><p>{profile.description}</p></div><ChevronRight size={17} /></button>)}</div>{!filtered.length && <div className="empty-state"><Search size={26} /><strong>没有匹配的写作工具</strong><p>换一个关键词试试。</p></div>}</section></section>
+    </div>
+  </>
+}
+
+function WritingToolPage({ profile, notify, navigate }) {
   const carriedCitation = localStorage.getItem('sport-research-citation-draft') || ''
-  const [form, setForm] = useState({ topic: '基于精准体育数据的学校体质健康分层干预研究', outlineMode: 'AI 智能', outline: '', references: carriedCitation ? '手动上传' : 'AI 智能', referenceText: carriedCitation, referenceFiles: [], auxiliary: '补充研究成果情况、计划对比、资金使用和问题经验', language: '中文', size: '短（约4000字）' })
+  const defaultTopic = profile.slug === 'jietibaogao' ? '基于精准体育数据的学校体质健康分层干预研究' : ''
+  const [form, setForm] = useState({ topic: defaultTopic, outlineMode: 'AI 智能', outline: '', references: carriedCitation ? '手动上传' : 'AI 智能', referenceText: carriedCitation, referenceFiles: [], style: '专业风格', auxiliary: '', language: '中文', size: '短（约4000字）' })
   const [draft, setDraft] = useState('')
   const [generating, setGenerating] = useState(false)
-
-  function update(field, value) {
-    setForm((current) => ({ ...current, [field]: value }))
+  function update(field, value) { setForm((current) => ({ ...current, [field]: value })) }
+  function remember() {
+    const current = loadArray('sport-writing-recent', [])
+    localStorage.setItem('sport-writing-recent', JSON.stringify([profile.slug, ...current.filter((slug) => slug !== profile.slug)].slice(0, 8)))
   }
-
   function generateDraft() {
-    if (!form.topic.trim()) {
-      notify('请先填写科研课题', 'error')
-      return
-    }
+    if (!form.topic.trim()) return notify(`请先填写${profile.inputLabel}`, 'error')
     setGenerating(true)
-    window.setTimeout(() => {
-      setDraft(buildClosureDraft(form))
-      setGenerating(false)
-      notify('AI 课题结题报告草稿已生成')
-    }, 350)
+    remember()
+    window.setTimeout(() => { setDraft(buildWritingDraft(form, profile)); setGenerating(false); notify(`${profile.name}初稿已生成`) }, 350)
   }
-
   function copyDraft() {
-    if (!draft) return notify('请先生成报告草稿', 'error')
-    navigator.clipboard?.writeText(draft).then(() => notify('报告草稿已复制')).catch(() => notify('当前浏览器未授权剪贴板，请直接选中复制', 'error'))
+    if (!draft) return notify('请先生成初稿', 'error')
+    const copy = navigator.clipboard?.writeText(draft)
+    if (!copy) return notify('当前浏览器未授权剪贴板，请直接选中复制', 'error')
+    copy.then(() => notify('初稿已复制')).catch(() => notify('当前浏览器未授权剪贴板，请直接选中复制', 'error'))
   }
-
   function exportDraft() {
-    if (!draft) return notify('请先生成报告草稿', 'error')
-    downloadText('课题结题报告- AI辅助初稿.md', draft)
-    notify('报告草稿已导出')
+    if (!draft) return notify('请先生成初稿', 'error')
+    downloadText(`${profile.name}-AI辅助初稿.md`, draft)
+    notify('初稿已导出')
   }
-
   return <>
-    <PageHeader title="AI 写作" subtitle="把科研课题、过程证据和参考资料整理成可核验的结题报告初稿" actions={<><Tag color="purple">本地示例工作区</Tag><Button icon={FileDown} onClick={exportDraft}>导出初稿</Button></>} />
-    <div className="writing-workbench">
-      <section className="panel writing-form-panel"><div className="panel-heading"><div><h2>课题结题报告</h2><p>参考目标模块的“输入要求 → 生成初稿 → 在线编辑”流程</p></div><Tag color="blue">6 个字段</Tag></div><div className="writing-stepper"><span className="active">1 输入要求</span><b>→</b><span className={draft ? 'active' : ''}>2 生成初稿</span><b>→</b><span>3 核验编辑</span></div><div className="form-stack writing-fields"><label>科研课题 <em>必填</em><input className="input" value={form.topic} onChange={(event) => update('topic', event.target.value)} placeholder="请输入清晰准确的科研课题" /></label><label>写作大纲 <select className="select" value={form.outlineMode} onChange={(event) => update('outlineMode', event.target.value)}><option>AI 智能</option><option>指定大纲</option></select></label>{form.outlineMode === '指定大纲' && <label>自定义大纲<textarea className="textarea" value={form.outline} onChange={(event) => update('outline', event.target.value)} placeholder="每行输入一个二级标题" /></label>}<label>参考文献 <select className="select" value={form.references} onChange={(event) => update('references', event.target.value)}><option>AI 智能</option><option>手动上传</option></select></label>{form.references === '手动上传' && <><label>引用文本<textarea className="textarea" value={form.referenceText} onChange={(event) => update('referenceText', event.target.value)} placeholder="粘贴标准引用或参考文献列表" /></label><label className="file-picker">上传参考资料 <input type="file" multiple accept=".pdf,.docx,.txt" onChange={(event) => update('referenceFiles', Array.from(event.target.files || []).map((file) => file.name))} /><span>{form.referenceFiles.length ? form.referenceFiles.join('、') : '选择 PDF、DOCX 或 TXT 文件'}</span></label></>}<label>辅助信息 <textarea className="textarea" value={form.auxiliary} onChange={(event) => update('auxiliary', event.target.value)} placeholder="研究成果、计划对比、资金使用、问题经验等" /></label><div className="form-grid two-cols"><label>写作语言 <select className="select" value={form.language} onChange={(event) => update('language', event.target.value)}><option>中文</option><option>英文</option></select></label><label>篇幅长度 <select className="select" value={form.size} onChange={(event) => update('size', event.target.value)}><option>短（约4000字）</option><option>中（约8000字）</option></select></label></div><Button variant="primary" icon={generating ? RefreshCw : Sparkles} onClick={generateDraft} disabled={generating}>{generating ? '生成中...' : '生成报告初稿'}</Button></div><div className="writing-guard"><ShieldCheck size={17} /><span>AI 只生成结构化初稿，提交前请人工核验数据、引用和经费凭证。</span></div></section>
-      <section className="panel writing-preview-panel"><div className="panel-heading"><div><h2>在线编辑区</h2><p>{draft ? '可直接编辑、复制或导出 Markdown 初稿' : '生成后在此核验正文结构和证据占位'}</p></div><div className="preview-actions"><Button icon={ClipboardCheck} onClick={copyDraft} disabled={!draft}>复制</Button><Button icon={Download} onClick={exportDraft} disabled={!draft}>导出</Button></div></div>{draft ? <textarea className="draft-editor" value={draft} onChange={(event) => setDraft(event.target.value)} /> : <div className="empty-state writing-empty"><Sparkles size={30} /><strong>等待生成报告初稿</strong><p>先完善左侧课题信息，再生成一份可编辑的结构化草稿。</p></div>}</section>
-    </div>
+    <PageHeader title={profile.name} subtitle={profile.description} actions={<><Button icon={ChevronRight} onClick={() => navigate('/research/writing')}>返回工具中心</Button><Button icon={FileDown} onClick={exportDraft} disabled={!draft}>导出初稿</Button></>} />
+    <div className="writing-tool-layout"><section className="panel writing-tool-form"><div className="writing-tool-heading"><span className="writing-tool-icon large"><FileText size={24} /></span><div><h2>{profile.name}</h2><p>{profile.description}</p></div></div><label className="writing-topic-field">* {profile.inputLabel}<textarea aria-label={profile.inputLabel} maxLength={100} value={form.topic} onChange={(event) => update('topic', event.target.value)} placeholder={profile.placeholder} /><small>{form.topic.length} / 100</small></label><div className="writing-option"><h3>写作大纲 <span>?</span></h3><div className="writing-segmented"><button className={form.outlineMode === 'AI 智能' ? 'active' : ''} onClick={() => update('outlineMode', 'AI 智能')}>AI 智能</button><button className={form.outlineMode === '指定大纲' ? 'active' : ''} onClick={() => update('outlineMode', '指定大纲')}>指定大纲</button></div>{form.outlineMode === '指定大纲' && <textarea aria-label="自定义大纲" className="textarea" value={form.outline} onChange={(event) => update('outline', event.target.value)} placeholder="每行输入一个章节标题" />}</div><div className="writing-option"><h3>* 参考文献 <span>?</span></h3><div className="writing-segmented"><button className={form.references === 'AI 智能' ? 'active' : ''} onClick={() => update('references', 'AI 智能')}>AI 智能</button><button className={form.references === '手动上传' ? 'active' : ''} onClick={() => update('references', '手动上传')}>手动上传</button></div>{form.references === '手动上传' && <><textarea aria-label="引用文本" className="textarea" value={form.referenceText} onChange={(event) => update('referenceText', event.target.value)} placeholder="粘贴标准引用或参考文献列表" /><label className="file-picker">上传参考资料<input type="file" multiple accept=".pdf,.docx,.txt" onChange={(event) => update('referenceFiles', Array.from(event.target.files || []).map((file) => file.name))} /><span>{form.referenceFiles.length ? form.referenceFiles.join('、') : '选择 PDF、DOCX 或 TXT 文件'}</span></label></>}</div><div className="writing-option"><h3>* 写作风格 <span>?</span></h3><div className="writing-style-grid">{['专业风格', '深奥风格', '理论风格'].map((style) => <button key={style} className={form.style === style ? 'active' : ''} onClick={() => update('style', style)}><b>{style.slice(0, 1)}</b>{style}</button>)}</div></div><label className="writing-topic-field auxiliary-field">辅助信息<textarea aria-label="辅助信息" value={form.auxiliary} onChange={(event) => update('auxiliary', event.target.value)} placeholder="建议输入关键词、背景、目的、方法、计划、成果等具体信息（非必填）" /><small>{form.auxiliary.length} / 5000</small></label><div className="form-grid two-cols writing-extra-fields"><label>写作语言<select className="select" value={form.language} onChange={(event) => update('language', event.target.value)}><option>中文</option><option>英文</option></select></label><label>篇幅长度<select className="select" value={form.size} onChange={(event) => update('size', event.target.value)}><option>短（约4000字）</option><option>中（约8000字）</option></select></label></div><Button variant="primary" icon={generating ? RefreshCw : Sparkles} aria-label={profile.slug === 'jietibaogao' ? '生成报告初稿' : '开始写作'} onClick={generateDraft} disabled={generating}>{generating ? '生成中...' : '写作'}</Button><div className="writing-guard"><ShieldCheck size={17} /><span>AI 只生成结构化初稿，正式提交前请人工核验数据、引用和事实。</span></div></section><aside className="panel writing-tool-info"><span className="writing-word-icon">W</span><h2>{profile.name}</h2><p>{profile.description}</p><ul>{profile.features.map((feature) => <li key={feature}>{feature}</li>)}</ul></aside></div><section className="panel writing-result-panel"><div className="panel-heading"><div><h2>在线编辑区</h2><p>{draft ? '可直接编辑、复制或导出 Markdown 初稿' : '生成后在此核验正文结构和证据占位'}</p></div><div className="preview-actions"><Button icon={ClipboardCheck} onClick={copyDraft} disabled={!draft}>复制</Button><Button icon={Download} onClick={exportDraft} disabled={!draft}>导出</Button></div></div>{draft ? <textarea className="draft-editor" value={draft} onChange={(event) => setDraft(event.target.value)} /> : <div className="empty-state writing-empty"><Sparkles size={30} /><strong>等待生成初稿</strong><p>先填写主题和写作要求，再生成一份可编辑的结构化草稿。</p></div>}</section>
   </>
 }
 
@@ -429,13 +442,14 @@ function ResearchScholar({ notify, navigate }) {
 
   function saveCitation(paper) {
     if (!citations.includes(paper.id)) setCitations((current) => [...current, paper.id])
-    navigator.clipboard?.writeText(paper.citation).catch(() => {})
+    const copy = navigator.clipboard?.writeText(paper.citation)
+    copy?.catch(() => {})
     notify('引用已保存并复制')
   }
 
   function openWriting() {
     if (activePaper) localStorage.setItem('sport-research-citation-draft', activePaper.citation)
-    navigate('/research/writing')
+    navigate('/research/writing/jietibaogao')
     notify('已带入 AI 写作工作区')
   }
 
@@ -447,8 +461,13 @@ function ResearchScholar({ notify, navigate }) {
 }
 
 export function ResearchCenter({ path, notify, navigate }) {
-  const active = path.endsWith('/writing') ? 'writing' : path.endsWith('/scholar') ? 'scholar' : 'analysis'
-  return <><ResearchSubnav active={active} navigate={navigate} />{active === 'writing' ? <ResearchWriting notify={notify} /> : active === 'scholar' ? <ResearchScholar notify={notify} navigate={navigate} /> : <ResearchAnalysis notify={notify} />}</>
+  const active = path.startsWith('/research/writing') ? 'writing' : path.endsWith('/scholar') ? 'scholar' : 'analysis'
+  if (active === 'writing') {
+    const slug = path.split('/').filter(Boolean).pop()
+    const profile = writingToolProfiles.find((item) => item.slug === slug)
+    return <><ResearchSubnav active="writing" navigate={navigate} />{profile ? <WritingToolPage profile={profile} notify={notify} navigate={navigate} /> : <WritingHub navigate={navigate} />}</>
+  }
+  return <><ResearchSubnav active={active} navigate={navigate} />{active === 'scholar' ? <ResearchScholar notify={notify} navigate={navigate} /> : <ResearchAnalysis notify={notify} />}</>
 }
 
 export function HomeSchool({ notify }) {

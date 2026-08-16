@@ -227,3 +227,25 @@ export const researchPapers = [
     citation: '何青, 赵宇. 基于成长档案的学校体育家校协同干预机制[J]. 教育发展研究, 2022.',
   },
 ]
+
+export const writingToolProfiles = [
+  { slug: 'thesis_report', name: '开题报告', category: '学术教育', description: '万事开头难，开题报告特别难～来，点我！', inputLabel: '标题', placeholder: '请输入清晰准确的标题，如：儿童心理健康与原生家庭环境关系研究', sections: ['研究背景与意义', '国内外研究现状', '研究目标与内容', '研究方法与技术路线', '预期成果与进度安排'], features: ['专业详实的论文开题报告', '缘由、现状、方法、成果', 'AI 原创，仅供参考', '支持中英文'] },
+  { slug: 'cailiao', name: '课题申报材料', category: '学术教育', description: '让科研课题申报变得简单', inputLabel: '科研课题', placeholder: '请输入清晰准确的科研课题，如：学校体育分层教学模式研究', sections: ['课题背景与问题提出', '研究目标与内容', '研究思路与方法', '预期成果与预算', '研究团队与保障'], features: ['高效快捷，一键创作长文', '专业的科研课题申报材料', '背景、目的、内容、方法', '预期成果、预算、团队'] },
+  { slug: 'ketibaogao', name: '课题中期报告', category: '学术教育', description: '辅助科研课题中期检查', inputLabel: '科研课题', placeholder: '请输入清晰准确的科研课题，如：学校体育分层教学模式研究', sections: ['课题背景与目标', '研究工作回顾', '阶段成果与证据', '计划对比与问题', '下一阶段计划'], features: ['高效快捷，一键创作长文', '专业的科研课题中期报告', '背景、目的、工作回顾', '计划对比、问题、预期成果'] },
+  { slug: 'jietibaogao', name: '课题结题报告', category: '学术教育', description: '科研课题验收总结报告', inputLabel: '科研课题', placeholder: '请输入清晰准确的科研课题，如：学校体育分层教学模式研究', sections: ['研究背景与目标', '研究设计与实施过程', '研究成果与证据', '计划对比与问题反思', '经费使用与团队分工', '结论与后续计划'], features: ['高效快捷，一键创作长文', '专业的科研课题结题报告', '背景、目的、工作回顾', '成果、计划对比、资金使用'] },
+  { slug: 'literature_review', name: '文献综述', category: '推荐写作', description: '文献总结评价，观点深入剖析', inputLabel: '综述主题', placeholder: '请输入文献综述主题，如：青少年体质健康干预研究进展', sections: ['概念界定与研究范围', '国内外研究现状', '研究观点比较', '研究不足与启示', '未来研究方向'], features: ['系统梳理研究脉络', '对比不同学术观点', '标注待核验引用', '支持中英文'] },
+  { slug: 'report', name: '实习总结报告', category: '学生常用', description: '全面专业深入的实习总结/实习报告', inputLabel: '实习主题', placeholder: '请输入实习单位、岗位和总结主题', sections: ['实习基本情况', '主要工作与收获', '问题与解决过程', '能力成长与反思', '后续计划'], features: ['工作内容结构化整理', '突出实践收获', '支持自定义篇幅', '可在线编辑导出'] },
+  { slug: 'port_royale', name: '心得体会', category: '学生常用', description: '任何心得体会，都能上价值！', inputLabel: '心得主题', placeholder: '请输入学习、实践或活动主题', sections: ['事件与背景', '具体经历', '认识与感悟', '联系实际', '行动计划'], features: ['快速提炼真实经历', '表达自然有层次', '支持不同写作风格', '可在线编辑导出'] },
+  { slug: 'speech', name: '演讲稿', category: '学生常用', description: '各类用途、风格演讲稿快速生成！', inputLabel: '演讲主题', placeholder: '请输入演讲场合、主题和听众', sections: ['开场与引入', '核心观点', '案例与论证', '行动倡议', '结尾与致谢'], features: ['适配演讲场景', '控制表达节奏', '突出核心观点', '支持中英文'] },
+  { slug: 'sum_up', name: '工作总结', category: '职场精选', description: '适用于个人工作总结与回顾', inputLabel: '总结主题', placeholder: '请输入部门、岗位和总结周期', sections: ['工作概况', '重点成果', '问题与改进', '经验沉淀', '下一阶段计划'], features: ['成果与问题分开呈现', '适配工作汇报语气', '支持自定义辅助信息', '可在线编辑导出'] },
+  { slug: 'study_report', name: '调研报告', category: '职场精选', description: '没有调查研究，就没有发言权～', inputLabel: '调研主题', placeholder: '请输入调研对象、范围和核心问题', sections: ['调研背景', '调研设计', '数据与发现', '问题分析', '结论与建议'], features: ['结构化呈现调研结果', '保留数据占位', '支持自定义大纲', '可在线编辑导出'] },
+  { slug: 'activity_report', name: '活动总结报告', category: '职场精选', description: '各类活动的专业总结报告', inputLabel: '活动主题', placeholder: '请输入活动名称、时间和参与对象', sections: ['活动概况', '组织实施', '成果与亮点', '问题复盘', '后续建议'], features: ['复盘活动全过程', '提炼亮点和问题', '支持多种写作风格', '可在线编辑导出'] },
+  { slug: 'qingk', name: '情况汇报', category: '机关单位', description: '情况说明汇报，做好管理沟通～', inputLabel: '汇报主题', placeholder: '请输入需要汇报的事项和对象', sections: ['基本情况', '工作进展', '主要问题', '原因分析', '下一步安排'], features: ['情况、进展、问题、安排', '适配正式汇报场景', '突出事实与数据', '支持中英文'] },
+  { slug: 'minyi', name: '社情民意报告', category: '机关单位', description: '专业全面的社情民意调查报告', inputLabel: '调研主题', placeholder: '请输入社情民意调研主题', sections: ['问题背景', '民意来源', '主要诉求', '原因分析', '对策建议'], features: ['专业全面的民意整理', '区分事实与观点', '支持引用参考资料', '可在线编辑导出'] },
+  { slug: 'tian', name: '提案议案', category: '机关单位', description: '丰富提案内容，提高采纳机率～', inputLabel: '提案主题', placeholder: '请输入提案议案主题和拟解决问题', sections: ['案由与背景', '现状与问题', '必要性与可行性', '具体建议', '保障措施'], features: ['问题、依据、建议完整呈现', '适配正式提案语气', '支持辅助信息补充', '可在线编辑导出'] },
+  { slug: 'technical_post', name: '职称评选报告', category: '机关单位', description: '职称评选、专业技术总结报告', inputLabel: '评选主题', placeholder: '请输入申报职称、岗位和专业方向', sections: ['个人基本情况', '专业工作业绩', '专业能力与成果', '履职与贡献', '申报理由'], features: ['专业业绩结构化整理', '突出成果与贡献', '支持自定义大纲', '可在线编辑导出'] },
+  { slug: 'inform', name: '通知', category: '机关单位', description: '一篇格式规范、内容精确的通知~', inputLabel: '通知主题', placeholder: '请输入通知事项、对象和截止时间', sections: ['通知缘由', '具体事项', '时间与地点', '参与要求', '联系人及说明'], features: ['格式规范、内容精确', '突出时间和执行要求', '适配机关单位场景', '可在线编辑导出'] },
+  { slug: 'thought', name: '思想感悟', category: '机关单位', description: '通过理性与感性的分析，推动自我成长～', inputLabel: '感悟主题', placeholder: '请输入学习、会议或实践主题', sections: ['事件背景', '认识变化', '理性分析', '联系工作', '行动承诺'], features: ['理性与感性结合', '突出思想变化', '适配正式表达', '支持中英文'] },
+  { slug: 'deed', name: '先进事迹报告', category: '机关单位', description: '优秀的事让更多人知道～', inputLabel: '事迹主题', placeholder: '请输入人物、集体和先进事迹', sections: ['人物或集体概况', '先进事迹', '具体案例', '精神品质', '推广价值'], features: ['突出典型事迹', '细节和价值并重', '支持多种篇幅', '可在线编辑导出'] },
+  { slug: 'press_release', name: '新闻稿', category: '机关单位', description: '快速生成一篇清晰明了的新闻稿～', inputLabel: '新闻主题', placeholder: '请输入新闻事件、时间、地点和人物', sections: ['标题与导语', '事件经过', '现场与数据', '相关回应', '背景补充'], features: ['标题、导语、正文完整', '突出事实和时效', '支持正式写作风格', '可在线编辑导出'] },
+]
