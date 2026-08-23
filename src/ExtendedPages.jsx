@@ -194,11 +194,16 @@ export function PrecisionDashboard({ notify }) {
   const [school, setSchool] = useState('全域学校')
   const [grade, setGrade] = useState('全部年级')
   const [riskFilter, setRiskFilter] = useState('全部风险')
-  const visibleRisks = precisionRiskItems.filter((item) => (riskFilter === '全部风险' || item.level === riskFilter) && (grade === '全部年级' || item.grade === grade))
+  const hasData = school === '全域学校'
+  const visibleRisks = hasData ? precisionRiskItems.filter((item) => (riskFilter === '全部风险' || item.level === riskFilter) && (grade === '全部年级' || item.grade === grade)) : []
+  const visibleGrades = hasData ? precisionGrades.filter((item) => grade === '全部年级' || item.grade === grade) : []
   const talentByEvent = precisionTalent.reduce((map, item) => {
     map[item.event] = (map[item.event] || 0) + 1
     return map
   }, {})
+  const overview = hasData ? precisionGrades.map((item) => ({ name: item.grade, pass: item.pass, students: item.students })) : []
+  const projectPass = hasData ? [{ name: '30m短跑', value: 94 }, { name: '纵跳', value: 88 }, { name: '立定跳远', value: 91 }, { name: '柔韧性', value: 76 }] : []
+  const genderData = hasData ? [{ name: '女生', value: 54 }, { name: '男生', value: 46 }] : []
 
   function exportBrief() {
     const rows = [
@@ -221,15 +226,22 @@ export function PrecisionDashboard({ notify }) {
   return <>
     <PageHeader title="精准体育系统" subtitle="一屏尽揽全校精准体质数据，管理决策有支撑" actions={<><Select value={school} onChange={setSchool}><option>全域学校</option><option>测试学校</option><option>体育东路小学</option><option>观澜中学</option></Select><Select value={grade} onChange={setGrade}><option>全部年级</option><option>四年级</option><option>七年级</option><option>高一</option><option>高二</option></Select><Button icon={Download} onClick={exportBrief}>导出管理简报</Button></>} />
     <StatStrip items={[
-      { label: '受伤风险人数', value: 17, unit: '人', color: '#ef4444', hint: '高风险 5 人' },
-      { label: '田径人才储备', value: 28, unit: '人', color: '#2563eb', hint: '短跑 / 跳跃专项' },
-      { label: '网球队人才储备', value: 19, unit: '人', color: '#10b981', hint: '敏捷与协调专项' },
-      { label: '核心卡点年级', value: 3, unit: '个', color: '#f97316', hint: '需要重点干预' },
-      { label: '数据覆盖率', value: 96.4, unit: '%', color: '#7c3aed', hint: '本学期已采集' },
+      { label: '受伤风险人数', value: hasData ? 17 : '--', unit: hasData ? '人' : '', color: '#ef4444', hint: hasData ? '高风险 5 人' : '暂无数据' },
+      { label: '田径人才储备', value: hasData ? 28 : '--', unit: hasData ? '人' : '', color: '#2563eb', hint: hasData ? '短跑 / 跳跃专项' : '暂无数据' },
+      { label: '网球队人才储备', value: hasData ? 19 : '--', unit: hasData ? '人' : '', color: '#10b981', hint: hasData ? '敏捷与协调专项' : '暂无数据' },
+      { label: '核心卡点年级', value: hasData ? 3 : '--', unit: hasData ? '个' : '', color: '#f97316', hint: hasData ? '需要重点干预' : '暂无数据' },
+      { label: '数据覆盖率', value: hasData ? 96.4 : '--', unit: hasData ? '%' : '', color: '#7c3aed', hint: hasData ? '本学期已采集' : '暂无数据' },
     ]} />
+    <section className="precision-insight panel"><strong>驾驶舱概览</strong><span>优点：覆盖率高、核心指标集中；缺点：高风险学生仍需重点干预。</span><span>当前口径：{school} · {grade}，筛选结果同步更新全部模块。</span></section>
     <div className="precision-top-grid">
       <section className="panel precision-risk-panel"><div className="panel-heading"><div><h2>受伤风险预警</h2><p>基于不对称率、疲劳度与落地稳定性综合评估</p></div><div className="segmented">{['全部风险', '高', '中'].map((item) => <button key={item} className={riskFilter === item ? 'active' : ''} onClick={() => setRiskFilter(item)}>{item}</button>)}</div></div><div className="risk-meter"><div className="risk-meter-ring"><strong>17</strong><span>待干预</span></div><div className="risk-meter-bars"><div><span>左右腿不对称</span><b>9 人</b><i><em style={{ width: '76%', background: '#ef4444' }} /></i></div><div><span>疲劳恢复不足</span><b>5 人</b><i><em style={{ width: '48%', background: '#f97316' }} /></i></div><div><span>落地稳定风险</span><b>3 人</b><i><em style={{ width: '30%', background: '#f59e0b' }} /></i></div></div></div><div className="table-scroll"><table><thead><tr><th>学生</th><th>年级 / 班级</th><th>主要风险</th><th>风险值</th><th>建议动作</th></tr></thead><tbody>{visibleRisks.map((item) => <tr key={item.name}><td><b>{item.name}</b></td><td>{item.grade} · {item.className}</td><td><Tag color={item.level === '高' ? 'red' : 'orange'}>{item.risk}</Tag></td><td className="danger-text"><b>{item.score}%</b></td><td>{item.action}</td></tr>)}</tbody></table></div></section>
       <section className="panel talent-reserve-panel"><div className="panel-heading"><div><h2>专项人才储备</h2><p>从全校体测数据提取可培养人才</p></div><Tag color="purple">47 人</Tag></div><div className="talent-reserve-summary"><div><span>田径队</span><strong>28</strong><small>人 · 59.6%</small></div><div><span>网球队</span><strong>19</strong><small>人 · 40.4%</small></div></div><div className="reserve-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={precisionTalent.slice(0, 5)} layout="vertical" margin={{ top: 0, right: 25, left: 6, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" horizontal={false} /><XAxis type="number" domain={[0, 100]} hide /><YAxis type="category" dataKey="name" width={52} tick={{ fill: '#64748b', fontSize: 10 }} /><Tooltip /><Bar dataKey="score" name="潜力分" fill="#2563eb" radius={[0, 5, 5, 0]} /></BarChart></ResponsiveContainer></div><div className="reserve-event-list">{Object.entries(talentByEvent).map(([event, count]) => <div key={event}><span>{event}</span><b>{count} 人</b></div>)}</div></section>
+    </div>
+    <div className="precision-cockpit-grid">
+      <section className="panel chart-panel"><div className="panel-heading"><div><h2>区域/学校排名</h2><p>优点：重点对象清晰；缺点：校际样本仍需补齐。</p></div></div><div className="rank-list">{(hasData ? [{ name: '测试学校', value: 96.4 }, { name: '体育东路小学', value: 93.1 }, { name: '观澜中学', value: 89.8 }] : []).map((item, index) => <div key={item.name}><b>{String(index + 1).padStart(2, '0')}</b><span>{item.name}</span><strong>{item.value}%</strong></div>)}{!hasData && <div className="empty-state">暂无数据</div>}</div></section>
+      <section className="panel chart-panel"><div className="panel-heading"><div><h2>项目达标率</h2><p>优点：项目差异可比较；缺点：柔韧性仍是主要短板。</p></div></div><div className="small-chart">{projectPass.length ? <ResponsiveContainer width="100%" height="100%"><BarChart data={projectPass} layout="vertical"><CartesianGrid strokeDasharray="3 3" horizontal={false} /><XAxis type="number" domain={[0, 100]} /><YAxis dataKey="name" type="category" width={70} tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="value" name="达标率" fill="#2563eb" radius={[0, 4, 4, 0]} /></BarChart></ResponsiveContainer> : <div className="empty-state">暂无数据</div>}</div></section>
+      <section className="panel chart-panel"><div className="panel-heading"><div><h2>年级达标趋势</h2><p>优点：年级差异直观；缺点：当前仅展示阶段性结果。</p></div></div><div className="small-chart">{overview.length ? <ResponsiveContainer width="100%" height="100%"><LineChart data={overview}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="name" /><YAxis domain={[70, 100]} /><Tooltip /><Line dataKey="pass" name="达标率" stroke="#10b981" strokeWidth={3} /></LineChart></ResponsiveContainer> : <div className="empty-state">暂无数据</div>}</div></section>
+      <section className="panel chart-panel"><div className="panel-heading"><div><h2>男女生比例</h2><p>优点：群体结构一目了然；缺点：比例不能替代分项目表现。</p></div></div><div className="small-chart">{genderData.length ? <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={genderData} dataKey="value" nameKey="name" innerRadius={48} outerRadius={78} label>{genderData.map((item, index) => <Cell key={item.name} fill={index ? '#2563eb' : '#10b981'} />)}</Pie><Tooltip /><Legend /></PieChart></ResponsiveContainer> : <div className="empty-state">暂无数据</div>}</div></section>
     </div>
     <div className="precision-bottom-grid">
       <section className="panel grade-bottleneck-panel"><div className="panel-heading"><div><h2>各年级体质核心卡点</h2><p>达标率、短板与影响人数同步呈现</p></div><Tag color="orange">决策重点</Tag></div><div className="table-scroll"><table><thead><tr><th>年级</th><th>样本</th><th>达标率</th><th>核心卡点</th><th>影响人数</th><th>趋势</th><th>动作</th></tr></thead><tbody>{precisionGrades.map((item) => <tr key={item.grade}><td><b>{item.grade}</b></td><td>{item.students} 人</td><td><div className="inline-progress"><span style={{ width: `${item.pass}%`, background: item.color }} /><b>{item.pass}%</b></div></td><td>{item.bottleneck}</td><td className="warning-text"><b>{item.affected} 人</b></td><td><Tag color={item.trend === '重点干预' ? 'red' : item.trend === '需关注' ? 'orange' : 'green'}>{item.trend}</Tag></td><td><button className="link-button" onClick={() => notify(`${item.grade} 已生成专项干预建议`)}>生成建议</button></td></tr>)}</tbody></table></div></section>
