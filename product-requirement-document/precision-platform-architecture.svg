@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="dash-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#94a3b8"/></marker>
+    <style>
+      .title{font:700 28px Arial,"Microsoft YaHei",sans-serif;fill:#0f172a}.subtitle{font:14px Arial,"Microsoft YaHei",sans-serif;fill:#64748b}
+      .section{font:700 16px Arial,"Microsoft YaHei",sans-serif;fill:#1e293b}.box-title{font:700 15px Arial,"Microsoft YaHei",sans-serif;fill:#0f172a}.box-text{font:12px Arial,"Microsoft YaHei",sans-serif;fill:#475569}
+      .box{fill:#fff;stroke:#dbe5f0;stroke-width:2}.blue{fill:#eff6ff;stroke:#93c5fd}.green{fill:#ecfdf5;stroke:#86efac}.orange{fill:#fff7ed;stroke:#fdba74}.red{fill:#fef2f2;stroke:#fca5a5}.purple{fill:#faf5ff;stroke:#d8b4fe}.future{fill:#f8fafc;stroke:#94a3b8;stroke-width:2;stroke-dasharray:9 7}.lane{fill:#f8fafc;stroke:#e2e8f0;stroke-width:1}
+      .line{stroke:#2563eb;stroke-width:3;fill:none;marker-end:url(#arrow)}.dash{stroke:#94a3b8;stroke-width:2.5;fill:none;stroke-dasharray:9 7;marker-end:url(#dash-arrow)}
+      .label{font:12px Arial,"Microsoft YaHei",sans-serif;fill:#64748b}.legend{font:12px Arial,"Microsoft YaHei",sans-serif;fill:#475569}
+    </style>
+  </defs>
+  <rect width="1600" height="980" fill="#f5f7fa"/>
+  <text x="70" y="58" class="title">运动能力分析系统｜整体业务流程与技术模块架构</text>
+  <text x="70" y="86" class="subtitle">实线：当前仓库已实现能力　·　虚线：后续生产化演进能力　·　数据范围：当前演示系统</text>
+
+  <rect x="50" y="115" width="1500" height="180" rx="14" class="lane"/>
+  <text x="75" y="145" class="section">一、数据进入与身份边界</text>
+  <rect x="85" y="175" width="210" height="80" rx="10" class="blue"/><text x="105" y="205" class="box-title">管理员登录</text><text x="105" y="228" class="box-text">本地认证 / 权限入口</text>
+  <rect x="355" y="175" width="230" height="80" rx="10" class="green"/><text x="375" y="205" class="box-title">AI 采集中心</text><text x="375" y="228" class="box-text">批次、终端、测试数据</text>
+  <rect x="645" y="175" width="230" height="80" rx="10" class="orange"/><text x="665" y="205" class="box-title">学生信息 / 人脸</text><text x="665" y="228" class="box-text">基础档案与识别状态</text>
+  <rect x="935" y="175" width="250" height="80" rx="10" class="purple"/><text x="955" y="205" class="box-title">前端数据域</text><text x="955" y="228" class="box-text">src/data.js + localStorage</text>
+  <rect x="1245" y="175" width="250" height="80" rx="10" class="future"/><text x="1265" y="205" class="box-title">后端数据服务（后续）</text><text x="1265" y="228" class="box-text">API、数据库、权限服务</text>
+  <path d="M295 215 H350" class="line"/><path d="M585 215 H640" class="line"/><path d="M875 215 H930" class="line"/><path d="M1185 215 H1240" class="dash"/>
+
+  <rect x="50" y="330" width="1500" height="290" rx="14" class="lane"/>
+  <text x="75" y="360" class="section">二、分析与业务应用层</text>
+  <rect x="85" y="395" width="250" height="175" rx="10" class="blue"/><text x="108" y="425" class="box-title">数据中心</text><text x="108" y="452" class="box-text">仪表盘 · 精准体育系统</text><text x="108" y="477" class="box-text">学生信息 · 人才地图</text><text x="108" y="502" class="box-text">风险管理</text><text x="108" y="540" class="label">全局指标与筛选口径</text>
+  <rect x="385" y="395" width="250" height="175" rx="10" class="orange"/><text x="408" y="425" class="box-title">诊断与识别</text><text x="408" y="452" class="box-text">风险分层与受伤预警</text><text x="408" y="477" class="box-text">专项人才储备</text><text x="408" y="502" class="box-text">年级卡点与达标趋势</text><text x="408" y="540" class="label">Recharts 可视化</text>
+  <rect x="685" y="395" width="250" height="175" rx="10" class="green"/><text x="708" y="425" class="box-title">教学与训练执行</text><text x="708" y="452" class="box-text">分层教学 · 速度大课间</text><text x="708" y="477" class="box-text">训练处方 · 测试计划</text><text x="708" y="502" class="box-text">家校协同</text><text x="708" y="540" class="label">动作方案与过程管理</text>
+  <rect x="985" y="395" width="250" height="175" rx="10" class="purple"/><text x="1008" y="425" class="box-title">科研与竞技</text><text x="1008" y="452" class="box-text">科研分析 · AI 写作</text><text x="1008" y="477" class="box-text">学术搜索 · 特色田径队</text><text x="1008" y="502" class="box-text">报告与成果归档</text><text x="1008" y="540" class="label">localStorage 保存部分状态</text>
+  <rect x="1285" y="395" width="210" height="175" rx="10" class="future"/><text x="1308" y="425" class="box-title">智能服务（后续）</text><text x="1308" y="452" class="box-text">真实 AI 推理</text><text x="1308" y="477" class="box-text">消息通知 / 任务派发</text><text x="1308" y="502" class="box-text">数据权限与审计</text>
+  <path d="M335 480 H380" class="line"/><path d="M635 480 H680" class="line"/><path d="M935 480 H980" class="line"/><path d="M1235 480 H1280" class="dash"/>
+
+  <rect x="50" y="655" width="1500" height="235" rx="14" class="lane"/>
+  <text x="75" y="685" class="section">三、管理决策闭环</text>
+  <rect x="100" y="730" width="250" height="80" rx="10" class="red"/><text x="125" y="760" class="box-title">发现问题</text><text x="125" y="783" class="box-text">风险、短板、覆盖缺口</text>
+  <rect x="430" y="730" width="250" height="80" rx="10" class="orange"/><text x="455" y="760" class="box-title">分轻重缓急</text><text x="455" y="783" class="box-text">立即 / 本周 / 规划</text>
+  <rect x="760" y="730" width="250" height="80" rx="10" class="green"/><text x="785" y="760" class="box-title">执行建议</text><text x="785" y="783" class="box-text">训练、复测、选材、课堂干预</text>
+  <rect x="1090" y="730" width="250" height="80" rx="10" class="blue"/><text x="1115" y="760" class="box-title">报告与复盘</text><text x="1115" y="783" class="box-text">导出管理简报 / 校级报告</text>
+  <path d="M350 770 H425" class="line"/><path d="M680 770 H755" class="line"/><path d="M1010 770 H1085" class="line"/>
+  <path d="M1215 730 C1215 680 210 680 210 730" class="dash"/><text x="600" y="705" class="label">后续：真实复测结果回流，形成持续闭环</text>
+  <line x1="1240" y1="925" x2="1290" y2="925" class="line"/><text x="1300" y="930" class="legend">当前已实现链路</text><line x1="1430" y1="925" x2="1480" y2="925" class="dash"/><text x="1490" y="930" class="legend">后续演进</text>
+</svg>
