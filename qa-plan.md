@@ -49,8 +49,8 @@ live canary is blocked only by the missing least-privilege read token.
   `BASE_URL=http://127.0.0.1:5173 node scripts/qa.mjs` reached the `capture`
   route and reported React `Maximum update depth exceeded` from
   `CaptureCenter` in `src/ExtendedPages.jsx`. The run did not pass; this is a
-  pre-existing application defect to triage separately, not evidence of a
-  successful desktop/mobile product acceptance.
+  pre-existing application defect tracked as issue #14 to triage separately,
+  not evidence of a successful desktop/mobile product acceptance.
 - SPORT-AFK-04 and SPORT-AFK-05: pending the read-only token and disposable
   owner-authored canaries.
 - GitHub setup: `AFK_PROFILE=aliyun-deepseek`, all triage/execution labels,
