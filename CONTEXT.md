@@ -1,13 +1,24 @@
-# 领域词汇
+# sport-clone
 
-## B 体质健康
+> Domain glossary / unified language for this project. Keep this file limited
+> to terms and avoided synonyms. Requirements belong in specs/issues; durable
+> implementation decisions belong in `docs/adr/`.
 
-当前阶段仅指“学生分析”页面：通过学生档案、体测指标、能力画像、诊断结论和成长趋势，形成面向个体的体质健康分析。其输出用于体育教学参考，不等同于医疗诊断。
+## Language
 
-## C 体育特色
+Define the project's core terms once. Each entry: the term, what it means,
+and any **Avoid** terms that would introduce drift.
 
-当前阶段以特色田径队为核心，围绕 AI 选材、项目适配、周期化竞技训练和赛事备战形成的特色发展业务域。
+<!-- Example:
 
-## 演示数据
+**Run**:
+A single execution of a test workflow against a target environment, with its
+own evidence, state file, and result. Identity is a path + timestamp.
+_Avoid_: Test, Session (ambiguous), Job
 
-为说明产品功能和业务流程而构造的数据，不代表任何真实区域、学校或学生的运营结果。
+**Case**:
+One test scenario within a run, with deterministic expected outcomes and an
+evidence contract.
+_Avoid_: Test case, Scenario (when interchangeable)
+
+-->
