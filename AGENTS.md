@@ -1,13 +1,11 @@
+<!-- afk-bootstrap:managed:start -->
+## AFK workflow gate
+
+For idea or planning work, read `docs/afk-workflow.md` and applicable files under `docs/agents/` first.
+
+Wait for explicit `/to-spec`, `/to-tickets`, `/implement`, or `/implement-spec` invocation before entering execution.
+<!-- afk-bootstrap:managed:end -->
+
 ## Agent skills
 
-### Issue tracker
-
-Issues and specs use local Markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Use the default five labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-This is a single-context repo. Use root `CONTEXT.md` and `docs/adr/` when those files exist. See `docs/agents/domain.md`.
+Read `docs/agents/` for GitHub issue tracking, triage labels, and domain documentation conventions.

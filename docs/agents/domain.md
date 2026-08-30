@@ -1,21 +1,5 @@
-# Domain Docs
+# Domain docs
 
-This is a single-context repository.
+This repository uses a single domain context. Read `CONTEXT.md` for glossary terms only; it must contain definitions and avoided synonyms, never a spec or implementation decision.
 
-## Consumer rules
-
-- Read root `CONTEXT.md` before exploring a domain area when it exists.
-- Read relevant decisions under `docs/adr/` when they exist.
-- Use the glossary vocabulary from `CONTEXT.md` in issue titles, proposals, tests, and refactors.
-- Surface conflicts with an ADR instead of silently overriding it.
-
-## Layout
-
-```text
-/
-|-- CONTEXT.md
-|-- docs/adr/
-`-- src/
-```
-
-Missing context or ADR files are not blockers. Create them lazily when a domain term or decision needs to be recorded.
+Read relevant `docs/adr/` records for implementation decisions and boundaries. Requirements belong in a spec or issue. Execution slicing and blocking edges belong in native tickets.

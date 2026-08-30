@@ -6,17 +6,25 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "check": "npm run build",
+    "preview": "vite preview --host 0.0.0.0",
+    "afk": "tsx .sandcastle/main.ts",
+    "ralph": "tsx .sandcastle/planner.ts",
+    "afk:policy": "node .sandcastle/policy-check.mjs all"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "recharts": "^2.15.0"
+    "recharts": "^2.15.0",
+    "tsx": "^4.20.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "playwright-core": "^1.49.1",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "@ai-hero/sandcastle": "^0.12.0",
+    "@types/node": "^24.0.0"
   }
 }

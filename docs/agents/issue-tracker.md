@@ -1,22 +1,15 @@
-# Issue tracker: Local Markdown
+# Issue tracker: GitHub
 
-Issues and specs for this repo live as Markdown files in `.scratch/`.
+Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all operations and infer the repository from `git remote -v`.
 
 ## Conventions
 
-- One feature per directory: `.scratch/<feature-slug>/`
-- The spec is `.scratch/<feature-slug>/spec.md`
-- Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`, never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file. See `triage-labels.md` for the role strings.
-- Comments and conversation history append to the bottom of the file under a `## Comments` heading.
+- Create: `gh issue create --title "..." --body "..."`.
+- Read: `gh issue view <number> --comments`.
+- List: `gh issue list --state open --json number,title,body,labels,comments`.
+- Comment or label: `gh issue comment` and `gh issue edit`.
+- Close only after the implementation or delivery that owns the issue is complete.
 
-## Publishing
+## Native relationships
 
-When a skill says to publish to the issue tracker, create a new file under `.scratch/<feature-slug>/`, creating the directory if needed.
-
-## Wayfinding
-
-- Map: `.scratch/<effort>/map.md`
-- Child tickets: `.scratch/<effort>/issues/NN-<slug>.md`
-- Child tickets record `Type:`, `Status:`, and, when applicable, `Blocked by:` lines.
-- The frontier is the first open, unblocked, unclaimed child ticket by number.
+PRDs use GitHub native sub-issues. Tickets use native issue dependencies when available; an issue is unblocked only when every blocker is closed.

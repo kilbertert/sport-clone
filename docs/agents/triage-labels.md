@@ -1,9 +1,9 @@
-# Triage Labels
+# Triage labels
 
-| Label in mattpocock/skills | Label in this repo | Meaning |
+| Role | Label | Meaning |
 | --- | --- | --- |
-| `needs-triage` | `needs-triage` | Maintainer needs to evaluate this issue |
-| `needs-info` | `needs-info` | Waiting on reporter for more information |
-| `ready-for-agent` | `ready-for-agent` | Fully specified, ready for an AFK agent |
-| `ready-for-human` | `ready-for-human` | Requires human implementation |
-| `wontfix` | `wontfix` | Will not be actioned |
+| needs-triage | needs-triage | Maintainer must evaluate the issue |
+| needs-info | needs-info | Waiting for more information |
+| ready-for-agent | ready-for-agent | Spec is complete and issue is eligible |
+| ready-for-human | ready-for-human | Requires human implementation |
+| wontfix | wontfix | Will not be actioned |
