@@ -28,7 +28,7 @@ await desktop.page.getByLabel('密码').fill('Sports1116.')
 await desktop.page.getByRole('button', { name: '登 录' }).click()
 await desktop.page.waitForURL(/dashboard/)
 
-const routes = ['dashboard', 'capture', 'students', 'talent', 'risk', 'teaching', 'recess', 'training', 'schedules', 'home-school', 'research', 'team', 'face', 'reports', 'profile']
+const routes = ['dashboard', 'precision', 'capture', 'students', 'talent', 'risk', 'teaching', 'recess', 'training', 'schedules', 'home-school', 'research', 'research/writing', 'research/scholar', 'team', 'face', 'reports', 'profile']
 for (const route of routes) {
   await desktop.page.goto(`${baseUrl}/${route}`, { waitUntil: 'networkidle' })
   await desktop.page.waitForTimeout(250)
@@ -42,7 +42,7 @@ for (const route of routes) {
     errors.push(`${route}: horizontal overflow ${metrics.bodyWidth}/${metrics.viewportWidth}`)
   }
   if (metrics.textLength < 60) errors.push(`${route}: unexpectedly little content`)
-  await desktop.page.screenshot({ path: `/tmp/sport-clone-qa/${route}-desktop.png`, fullPage: true })
+  await desktop.page.screenshot({ path: `/tmp/sport-clone-qa/${route.replaceAll('/', '-')}-desktop.png`, fullPage: true })
 }
 
 await desktop.page.goto(`${baseUrl}/students/100023017`, { waitUntil: 'networkidle' })
@@ -85,6 +85,27 @@ await desktop.page.locator('.modal').getByLabel('课题名称').fill('自动化�
 await desktop.page.locator('.modal').getByRole('button', { name: '创建课题' }).click()
 if (!(await desktop.page.getByText('自动化验收科研课题').count())) errors.push('research: created project not visible')
 
+await desktop.page.goto(`${baseUrl}/research/writing`, { waitUntil: 'networkidle' })
+await desktop.page.getByRole('button', { name: /学术教育/ }).click()
+await desktop.page.getByRole('button', { name: /开题报告/ }).click()
+await desktop.page.getByLabel('标题').fill('基于精准体育数据的学校体质健康分层干预研究')
+await desktop.page.getByRole('button', { name: '开始写作' }).click()
+await desktop.page.waitForTimeout(500)
+if (!(await desktop.page.locator('.draft-editor').inputValue()).includes('基于精准体育数据')) errors.push('research/writing: generic draft was not generated')
+
+await desktop.page.goto(`${baseUrl}/research/writing/jietibaogao`, { waitUntil: 'networkidle' })
+await desktop.page.getByRole('button', { name: '生成报告初稿' }).click()
+await desktop.page.waitForTimeout(500)
+if (!(await desktop.page.locator('.draft-editor').inputValue()).includes('基于精准体育数据')) errors.push('research/writing: closure draft was not generated')
+
+await desktop.page.goto(`${baseUrl}/research/scholar`, { waitUntil: 'networkidle' })
+await desktop.page.getByRole('button', { name: '搜索文献' }).click()
+await desktop.page.getByRole('button', { name: '加入知识库' }).first().click()
+if (!(await desktop.page.getByText(/已收藏 1 篇/).count())) errors.push('research/scholar: paper was not added to knowledge base')
+await desktop.page.getByRole('button', { name: '带入 AI 写作' }).click()
+if (!desktop.page.url().endsWith('/research/writing/jietibaogao')) errors.push('research/scholar: citation did not open writing workspace')
+if (!(await desktop.page.getByLabel('引用文本').inputValue()).includes('智慧体育背景')) errors.push('research/scholar: citation was not carried into writing')
+
 await desktop.page.goto(`${baseUrl}/home-school`, { waitUntil: 'networkidle' })
 await desktop.page.getByRole('button', { name: '发布家庭作业' }).click()
 await desktop.page.locator('.modal').getByLabel('作业名称').fill('自动化验收家庭作业')
@@ -96,11 +117,19 @@ const firstTeamAction = desktop.page.locator('.team-selection-grid tbody .button
 const previousTeamAction = await firstTeamAction.textContent()
 await firstTeamAction.click()
 if ((await firstTeamAction.textContent()) === previousTeamAction) errors.push('team: selection state did not update')
+await desktop.page.getByRole('button', { name: '冠军训练体系' }).click()
+if (!(await desktop.page.getByText('谁适合什么项目').count())) errors.push('team: champion training tab did not open')
+await desktop.page.getByRole('button', { name: '生成专项计划' }).click()
+if (!(await desktop.page.getByText(/已为 .* 创建 .* 训练计划/).count())) errors.push('team: project fit plan was not generated')
+
+await desktop.page.goto(`${baseUrl}/precision`, { waitUntil: 'networkidle' })
+await desktop.page.getByRole('button', { name: '生成建议' }).first().click()
+if (!(await desktop.page.getByText(/已生成专项干预建议/).count())) errors.push('precision: grade intervention was not generated')
 
 const mobile = await openContext('mobile', { width: 390, height: 844 })
 await mobile.page.goto(baseUrl, { waitUntil: 'networkidle' })
 await mobile.page.evaluate(() => localStorage.setItem('sport-auth', '1'))
-for (const route of ['dashboard', 'capture', 'students', 'teaching', 'recess', 'training', 'schedules', 'home-school', 'research', 'team']) {
+for (const route of ['dashboard', 'precision', 'capture', 'students', 'teaching', 'recess', 'training', 'schedules', 'home-school', 'research', 'research/writing', 'research/scholar', 'team']) {
   await mobile.page.goto(`${baseUrl}/${route}`, { waitUntil: 'networkidle' })
   await mobile.page.waitForTimeout(250)
   const metrics = await mobile.page.evaluate(() => ({
@@ -111,7 +140,7 @@ for (const route of ['dashboard', 'capture', 'students', 'teaching', 'recess', '
   if (metrics.bodyWidth > metrics.viewportWidth + 2) {
     errors.push(`mobile ${route}: horizontal overflow ${metrics.bodyWidth}/${metrics.viewportWidth}`)
   }
-  await mobile.page.screenshot({ path: `/tmp/sport-clone-qa/${route}-mobile.png`, fullPage: true })
+  await mobile.page.screenshot({ path: `/tmp/sport-clone-qa/${route.replaceAll('/', '-')}-mobile.png`, fullPage: true })
 }
 await mobile.page.goto(`${baseUrl}/dashboard`, { waitUntil: 'networkidle' })
 await mobile.page.getByTitle('打开导航').click()
