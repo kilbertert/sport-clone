@@ -34,8 +34,8 @@ runner configuration and live canary remain pending.
 
 - Base: `sport-clone` `origin/main`
   `325fe7e86c49c054acb6e8469df897de06449048`.
-- Template: `afk-bootstrap` `060f110850da924da921d3c0df99a2c37073084f`
-  (template `1.1.4`).
+- Template: `afk-bootstrap` `b36e4a36d72e5ff565e29a6bd9c16c675508da8b`
+  (template `1.1.5`).
 - SPORT-AFK-01: passed on Linux with Node 24.15.0 and npm 11.12.1:
   `npm ci`, `npm run check`, `npm run afk:policy`, review-controller syntax,
   metadata/prompt assertions, and `git diff --check` all passed.
