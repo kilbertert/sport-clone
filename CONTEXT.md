@@ -1,4 +1,4 @@
-# {{PROJECT_NAME}}
+# sport-clone
 
 > Domain glossary / unified language for this project. Keep this file limited
 > to terms and avoided synonyms. Requirements belong in specs/issues; durable
