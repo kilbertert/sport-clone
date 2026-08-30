@@ -62,6 +62,7 @@ import {
   YAxis,
 } from 'recharts'
 import { students } from './data'
+import { canConfirm, coverageMessage, diagnoseClass } from './classHealth'
 import {
   captureDevices,
   captureLanes,
@@ -251,18 +252,78 @@ export function PrecisionDashboard({ notify }) {
 }
 
 export function LayeredTeaching({ notify }) {
+  const [school, setSchool] = useState('测试学校')
+  const [grade, setGrade] = useState('高一')
+  const [className, setClassName] = useState('1班')
+  const [batch, setBatch] = useState('完整测试')
   const [activeGroup, setActiveGroup] = useState('fast')
   const [duration, setDuration] = useState('40 分钟')
   const [venue, setVenue] = useState('田径场 1/2 场')
   const [equipment, setEquipment] = useState('标志桶、低栏、敏捷梯')
   const [generatedAt, setGeneratedAt] = useState('14:36')
+  const [issueLevels, setIssueLevels] = useState({})
+  const [groups, setGroups] = useState({})
+  const [adjustment, setAdjustment] = useState('')
+  const [status, setStatus] = useState('系统生成')
+  const [confirmRisk, setConfirmRisk] = useState(null)
+  const [riskReason, setRiskReason] = useState('')
+  const scope = useMemo(() => students.filter((item) => item.school === school && item.grade === grade && item.className === className), [school, grade, className])
+  const diagnosis = useMemo(() => diagnoseClass(scope, batch), [scope, batch])
+  const schoolOptions = [...new Set(students.map((item) => item.school))]
+  const gradeOptions = [...new Set(students.filter((item) => item.school === school).map((item) => item.grade))]
+  const classOptions = [...new Set(students.filter((item) => item.school === school && item.grade === grade).map((item) => item.className))]
+  const resolvedGroups = diagnosis.groups.map((item) => ({ ...item, ability: groups[item.id]?.ability || item.ability, risk: groups[item.id]?.risk || item.risk }))
   const active = teachingGroups.find((item) => item.id === activeGroup)
-  const groupedStudents = students.filter((_, index) => ['fast', 'middle', 'basic'][index % 3] === activeGroup).slice(0, 8)
-  const points = students.slice(0, 8).map((item, index) => ({ ...item, points: 980 - index * 46, streak: 7 - (index % 4) }))
+  const groupedStudents = resolvedGroups.filter((item) => ({ fast: '优势组', middle: '提升组', basic: '基础组' }[activeGroup] === item.ability))
+  const points = resolvedGroups.slice(0, 8).map((item, index) => ({ ...item, points: 980 - index * 46, streak: 7 - (index % 4) }))
+
+  function chooseSchool(value) {
+    const firstGrade = students.find((item) => item.school === value)?.grade || ''
+    const firstClass = students.find((item) => item.school === value && item.grade === firstGrade)?.className || ''
+    setSchool(value); setGrade(firstGrade); setClassName(firstClass); setGroups({}); setIssueLevels({}); setStatus('系统生成')
+  }
+
+  function chooseGrade(value) {
+    setGrade(value); setClassName(students.find((item) => item.school === school && item.grade === value)?.className || ''); setGroups({}); setIssueLevels({}); setStatus('系统生成')
+  }
 
   function generate() {
     setGeneratedAt(new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }))
+    setStatus('教师调整')
     notify('分层课堂方案已重新生成')
+  }
+
+  function updateGroup(student, ability) {
+    if (student.risk === '重点干预' && ability === '优势组') {
+      setConfirmRisk({ student, ability })
+      return
+    }
+    setGroups({ ...groups, [student.id]: { ...groups[student.id], ability } })
+    setStatus('教师调整')
+  }
+
+  function confirmRiskChange() {
+    if (!riskReason.trim()) return
+    setGroups({ ...groups, [confirmRisk.student.id]: { ...groups[confirmRisk.student.id], ability: confirmRisk.ability, riskReason } })
+    setStatus('教师调整'); setConfirmRisk(null); setRiskReason('')
+    notify('高风险调整已记录原因')
+  }
+
+  function confirmDiagnosis() {
+    setStatus('教师确认')
+    notify('班级诊断已由教师确认')
+  }
+
+  function syncDrafts() {
+    const draft = { school, grade, className, batch, coverage: diagnosis.coverage, issues: diagnosis.issues, groups: resolvedGroups, status: '已同步', updatedAt: new Date().toISOString() }
+    localStorage.setItem('sport-class-health-draft', JSON.stringify(draft))
+    setStatus('已同步')
+    notify('四类成果草稿已同步至教学、大课间、家校协同和报告区')
+  }
+
+  function exportReport() {
+    const rows = ['班级体质健康分析报告', `范围,${school} ${grade} ${className}`, `覆盖率,${diagnosis.coverage}%`, '', '问题,影响人数,有效样本,占比,严重程度,影响项目', ...diagnosis.issues.map((item) => [item.label, item.count, diagnosis.validStudents.length, item.rate === null ? '数据不足' : `${item.rate}%`, issueLevels[item.id] || item.status, item.project].join(','))]
+    downloadText(`${grade}${className}-班级体质健康报告.csv`, `\ufeff${rows.join('\n')}`, 'text/csv;charset=utf-8')
   }
 
   function exportPlan() {
@@ -272,14 +333,19 @@ export function LayeredTeaching({ notify }) {
   }
 
   return <>
-    <PageHeader title="分层教学" subtitle="基于体测数据自动分组并生成可直接执行的差异化体育课方案" actions={<><Button icon={Download} onClick={exportPlan}>导出方案</Button><Button variant="primary" icon={Sparkles} onClick={generate}>AI 生成课堂方案</Button></>} />
-    <div className="teaching-toolbar panel"><div><label>班级<Select value="高一 1班" onChange={() => {}}><option>高一 1班</option><option>高一 2班</option><option>四年级 四4班</option></Select></label><label>课堂时长<Select value={duration} onChange={setDuration}><option>40 分钟</option><option>45 分钟</option><option>60 分钟</option></Select></label><label>场地<Select value={venue} onChange={setVenue}><option>田径场 1/2 场</option><option>综合馆</option><option>室内走廊</option></Select></label><label>器械<input className="input" value={equipment} onChange={(event) => setEquipment(event.target.value)} /></label></div><span><CheckCircle2 size={16} />方案更新于 {generatedAt}</span></div>
+    <PageHeader title="分层教学" subtitle="以班级体质问题为依据生成课堂、大课间、家庭作业与分析报告" actions={<><Button icon={Download} onClick={exportReport}>导出 Excel</Button><Button icon={FileText} onClick={() => window.print()}>打印 / 保存 PDF</Button><Button variant="primary" icon={Sparkles} onClick={generate}>生成班级方案</Button></>} />
+    <div className="teaching-toolbar panel"><div><label>学校<Select value={school} onChange={chooseSchool}>{schoolOptions.map((item) => <option key={item}>{item}</option>)}</Select></label><label>年级<Select value={grade} onChange={chooseGrade}>{gradeOptions.map((item) => <option key={item}>{item}</option>)}</Select></label><label>班级<Select value={className} onChange={(value) => { setClassName(value); setGroups({}); setIssueLevels({}); setStatus('系统生成') }}>{classOptions.map((item) => <option key={item}>{item}</option>)}</Select></label><label>测试批次<Select value={batch} onChange={setBatch}><option>完整测试</option><option>阶段复测</option><option>试运行采样</option></Select></label><label>课堂时长<Select value={duration} onChange={setDuration}><option>40 分钟</option><option>45 分钟</option><option>60 分钟</option></Select></label><label>场地<Select value={venue} onChange={setVenue}><option>田径场 1/2 场</option><option>综合馆</option><option>室内走廊</option></Select></label></div><span><CheckCircle2 size={16} />{coverageMessage(diagnosis.coverage)}</span></div>
+    <StatStrip items={[{ label: '班级学生', value: scope.length, unit: '人', color: '#2563eb' }, { label: '有效样本', value: diagnosis.validStudents.length, unit: '人', color: '#10b981' }, { label: '数据覆盖率', value: diagnosis.coverage, unit: '%', color: diagnosis.coverage >= 80 ? '#10b981' : '#f97316' }, { label: '主要问题', value: diagnosis.issues.filter((item) => item.status === '关注' || item.status === '重点干预').length, unit: '项', color: '#ef4444' }, { label: '方案状态', value: status, unit: '', color: '#7c3aed', hint: '同步不等于发布' }]} />
+    <section className="panel class-diagnosis-panel"><div className="panel-heading"><div><h2>班级体质问题诊断</h2><p>问题占比分母为对应项目有效样本；当前为演示判定口径</p></div><Tag color={canConfirm(diagnosis.coverage) ? 'green' : 'orange'}>{canConfirm(diagnosis.coverage) ? '可确认' : '仅预览'}</Tag></div><div className="class-issue-grid">{diagnosis.issues.map((issue) => <article key={issue.id} className={`class-issue issue-${issue.status}`}><header><strong>{issue.label}</strong>{issue.rate === null ? <Tag color="default">数据不足</Tag> : <Select value={issueLevels[issue.id] || issue.status} onChange={(value) => { setIssueLevels({ ...issueLevels, [issue.id]: value }); setStatus('教师调整') }}><option>正常</option><option>轻度</option><option>关注</option><option>重点干预</option></Select>}</header>{issue.rate === null ? <p>该维度数据不足，暂不推断结果。</p> : <><b>{issue.rate}%</b><p>{issue.count} / {diagnosis.validStudents.length} 人 · {issue.project}</p><small>系统判定：{issue.status}</small></>}</article>)}</div></section>
+    <section className="panel class-group-panel"><div className="panel-heading"><div><h2>能力分组与风险分层</h2><p>能力用于组织教学，风险用于控制负荷，两者独立展示</p></div><Tag color="purple">教师可调整</Tag></div><div className="table-scroll"><table><thead><tr><th>学生</th><th>能力分组</th><th>风险等级</th><th>30m</th><th>纵跳</th><th>调整备注</th></tr></thead><tbody>{resolvedGroups.map((student) => <tr key={student.id}><td><b>{student.name}</b><small className="cell-note">{student.id}</small></td><td><Select value={student.ability} onChange={(value) => updateGroup(student, value)}><option>优势组</option><option>提升组</option><option>基础组</option></Select></td><td><Tag color={student.risk === '重点干预' ? 'red' : student.risk === '关注' ? 'orange' : 'green'}>{student.risk}</Tag></td><td>{student.sprint}s</td><td>{student.jump}cm</td><td><input className="input compact-input" value={groups[student.id]?.note || ''} onChange={(event) => { setGroups({ ...groups, [student.id]: { ...groups[student.id], note: event.target.value } }); setStatus('教师调整') }} placeholder="教师备注" /></td></tr>)}</tbody></table></div></section>
+    <section className="panel class-output-panel"><div className="panel-heading"><div><h2>班级解决方案</h2><p>确认后生成四类草稿；同步后需在目标模块再次发布</p></div><Tag color={status === '已同步' ? 'green' : 'blue'}>{status}</Tag></div><div className="class-output-grid"><article><BookOpenCheck size={20} /><strong>体育课训练计划</strong><span>分组、动作、组数与强度</span></article><article><Music size={20} /><strong>大课间分层计划</strong><span>分区、节奏、场地与流程</span></article><article><HeartHandshake size={20} /><strong>分层家庭作业</strong><span>按能力组生成 3—5 份草稿</span></article><article><FileBarChart size={20} /><strong>班级分析报告</strong><span>问题、方案与复测建议</span></article></div><label className="class-note">教师备注<textarea value={adjustment} onChange={(event) => { setAdjustment(event.target.value); setStatus('教师调整') }} placeholder="补充本班场地、学生状态或执行限制" /></label><div className="class-actions"><Button onClick={confirmDiagnosis} disabled={!canConfirm(diagnosis.coverage)} icon={CheckCircle2}>教师确认</Button><Button variant="primary" onClick={syncDrafts} disabled={status !== '教师确认'} icon={Send}>同步四类草稿</Button></div></section>
     <div className="teaching-group-grid">{teachingGroups.map((group) => <button key={group.id} className={`group-card group-${group.color} ${activeGroup === group.id ? 'active' : ''}`} onClick={() => setActiveGroup(group.id)}><header><span>{group.level}</span><div><h2>{group.name}</h2><p>{group.count} 名学生</p></div><ChevronRight size={18} /></header><strong>{group.focus}</strong><p>{group.prescription}</p><footer><TargetIcon />{group.target}</footer></button>)}</div>
     <div className="teaching-main-grid">
       <section className="panel lesson-panel"><div className="panel-heading"><div><h2>课堂执行单</h2><p>{duration} · {venue}</p></div><Tag color="green">可直接授课</Tag></div><div className="lesson-timeline">{lessonTimeline.map((item, index) => <article key={item.phase}><div><span>{index + 1}</span><i /></div><div><header><strong>{item.phase}</strong><b>{item.duration} 分钟</b></header><p>{item.detail}</p><Tag color={item.intensity === '高' ? 'orange' : item.intensity === '中' ? 'blue' : 'green'}>{item.intensity}强度</Tag></div></article>)}</div><div className="teacher-script"><BookOpenCheck size={20} /><div><strong>标准授课话术</strong><p>“今天按能力梯队完成不同挑战。动作质量优先，完成后记录个人积分，不比较同学间成绩。”</p></div></div></section>
       <section className="panel roster-panel"><div className="panel-heading"><div><h2>{active.name}学生表</h2><p>{active.focus}</p></div><Tag color={active.color}>{active.count} 人</Tag></div><div className="table-scroll"><table><thead><tr><th>学生</th><th>30m</th><th>纵跳</th><th>潜力</th><th>本节负荷</th></tr></thead><tbody>{groupedStudents.map((item, index) => <tr key={item.id}><td><b>{item.name}</b><small className="cell-note">{item.id}</small></td><td>{item.sprint}s</td><td>{item.jump}cm</td><td><b className="metric-blue">{item.potential}</b></td><td><Tag color={index % 3 === 0 ? 'orange' : 'green'}>{index % 3 === 0 ? '80%' : '90%'}</Tag></td></tr>)}</tbody></table></div></section>
     </div>
     <section className="panel points-panel"><div className="panel-heading"><div><h2>课堂积分榜</h2><p>个人进步、动作质量与坚持度综合积分</p></div><Tag color="purple">本周</Tag></div><div className="points-list">{points.map((item, index) => <article key={item.id}><span className={`rank rank-${index + 1}`}>{index + 1}</span><div className="mini-avatar">{item.name.slice(0, 1)}</div><div><strong>{item.name}</strong><small>{item.grade} {item.className}</small></div><b>{item.points}<small> pts</small></b><Tag color={item.streak >= 6 ? 'orange' : 'blue'}>连续 {item.streak} 天</Tag></article>)}</div></section>
+    {confirmRisk && <Modal title="高风险学生调整确认" onClose={() => { setConfirmRisk(null); setRiskReason('') }} footer={<><Button onClick={() => { setConfirmRisk(null); setRiskReason('') }}>取消</Button><Button variant="primary" onClick={confirmRiskChange} disabled={!riskReason.trim()}>确认调整</Button></>}><div className="form-stack"><p>{confirmRisk.student.name} 当前为重点干预。调整到优势组前需说明原因。</p><label>调整原因<textarea className="textarea" value={riskReason} onChange={(event) => setRiskReason(event.target.value)} /></label></div></Modal>}
   </>
 }
 
@@ -294,6 +360,9 @@ export function RecessProgram({ notify }) {
   const [playing, setPlaying] = useState(false)
   const [activeVideo, setActiveVideo] = useState(null)
   const [enabled, setEnabled] = useState(false)
+  const [classDraft] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sport-class-health-draft')) } catch { return null }
+  })
   const actions = [
     { name: '30m 渐进加速跑', focus: '起跑、加速、身体前倾', duration: '02:18', icon: Zap },
     { name: '低栏连续跳', focus: '快速触地、踝膝稳定', duration: '01:46', icon: SquareActivity },
@@ -306,7 +375,8 @@ export function RecessProgram({ notify }) {
   }
 
   return <>
-    <PageHeader title="速度大课间" subtitle="根据学生分层、操场容量和课间时长生成全校同步训练方案" actions={<><Button icon={FileDown} onClick={exportPlan}>导出执行单</Button><Button variant="primary" icon={enabled ? Check : Send} onClick={() => { setEnabled(!enabled); notify(enabled ? '方案已停用' : '方案已发布到教师端') }}>{enabled ? '已启用' : '发布方案'}</Button></>} />
+    <PageHeader title="速度大课间" subtitle="根据学生分层、操场容量和课间时长生成全校同步训练方案" actions={<><Button icon={FileDown} onClick={exportPlan}>导出执行单</Button><Button variant="primary" icon={enabled ? Check : Send} onClick={() => { setEnabled(!enabled); notify(enabled ? '方案已停用' : classDraft ? '班级大课间草稿已确认发布' : '方案已发布到教师端') }}>{enabled ? '已启用' : classDraft ? '确认发布草稿' : '发布方案'}</Button></>} />
+    {classDraft && <section className="class-sync-note panel"><CheckCircle2 size={18} /><div><strong>已同步班级大课间草稿</strong><span>{classDraft.school} · {classDraft.grade}{classDraft.className} · 覆盖率 {classDraft.coverage}%</span></div><Tag color={enabled ? 'green' : 'orange'}>{enabled ? '已发布' : '待确认发布'}</Tag></section>}
     <div className="recess-config panel"><label>课间时长<Select value={duration} onChange={setDuration}><option>25 分钟</option><option>30 分钟</option></Select></label><label>场地条件<Select value={field} onChange={setField}><option>标准 400m 操场</option><option>200m 操场</option><option>室内场地</option></Select></label><label>参与学生<input className="input" value="409 人" readOnly /></label><label>训练分区<input className="input" value="3 个" readOnly /></label><Button icon={Sparkles} onClick={() => notify('已按当前条件重新排布场地与动作')}>重新生成</Button></div>
     <div className="recess-grid">
       <section className="panel recess-flow"><div className="panel-heading"><div><h2>30 分钟执行流程</h2><p>集合、热身、主训练、挑战与放松完整闭环</p></div><Tag color="green">总计 30 分钟</Tag></div><div className="flow-track">{recessTimeline.map((item, index) => <article key={item.minute} style={{ flex: index === 2 ? 2.2 : 1 }}><header><strong>{item.minute}</strong><span>{item.bpm} BPM</span></header><div><b>{item.title}</b><p>{item.activity}</p></div></article>)}</div><div className="music-player"><button onClick={() => setPlaying(!playing)} title={playing ? '暂停节奏' : '播放节奏'}>{playing ? <Pause size={19} /> : <Play size={19} />}</button><Music size={18} /><div><strong>大课间节奏轨</strong><span>{bpm} BPM · {playing ? '播放中' : '已暂停'}</span></div><div className={`waveform ${playing ? 'playing' : ''}`}>{Array.from({ length: 28 }, (_, index) => <i key={index} style={{ height: `${8 + (index * 7) % 22}px` }} />)}</div><Select value={String(bpm)} onChange={(value) => setBpm(Number(value))}><option>118</option><option>124</option><option>132</option><option>138</option></Select></div></section>
@@ -487,6 +557,9 @@ export function HomeSchool({ notify }) {
   const [modal, setModal] = useState(false)
   const [preview, setPreview] = useState(false)
   const [form, setForm] = useState({ title: '周末个性化速度处方', target: '高一 1班', due: '2026-07-27T20:00', focus: '启动加速与下肢协调' })
+  const [classDraft] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sport-class-health-draft')) } catch { return null }
+  })
   useEffect(() => localStorage.setItem('sport-homework-tasks', JSON.stringify(tasks)), [tasks])
 
   function publish() {
@@ -496,8 +569,15 @@ export function HomeSchool({ notify }) {
     notify('家庭运动作业已发布到家长端')
   }
 
+  function importClassDraft() {
+    if (!classDraft) return
+    setForm({ ...form, title: `${classDraft.grade}${classDraft.className}分层家庭训练`, target: `${classDraft.grade} ${classDraft.className}`, focus: '按优势组、提升组、基础组分层训练' })
+    setModal(true)
+  }
+
   return <>
-    <PageHeader title="家校协同" subtitle="学生成长档案、家庭运动处方、家长打卡和教师反馈同步闭环" actions={<><Button icon={MonitorSmartphone} onClick={() => setPreview(true)}>家长端预览</Button><Button variant="primary" icon={Plus} onClick={() => setModal(true)}>发布家庭作业</Button></>} />
+    <PageHeader title="家校协同" subtitle="学生成长档案、家庭运动处方、家长打卡和教师反馈同步闭环" actions={<><Button icon={MonitorSmartphone} onClick={() => setPreview(true)}>家长端预览</Button><Button variant="primary" icon={Plus} onClick={classDraft ? importClassDraft : () => setModal(true)}>{classDraft ? '确认班级作业草稿' : '发布家庭作业'}</Button></>} />
+    {classDraft && <section className="class-sync-note panel"><CheckCircle2 size={18} /><div><strong>已同步分层家庭作业草稿</strong><span>{classDraft.grade}{classDraft.className} · 将按 3 个能力组生成家庭训练</span></div><Tag color="orange">待确认发布</Tag></section>}
     <StatStrip items={[
       { label: '本周家庭作业', value: tasks.filter((item) => item.status === '进行中').length, unit: '项', color: '#2563eb' },
       { label: '覆盖学生', value: 256, unit: '人' },
