@@ -1,27 +1,4 @@
-<<<<<<< HEAD
-# 领域词汇
-
-## 学生敏感数据
-
-学生姓名、班级、体测结果、风险等级、健康相关指标及可关联到个人的信息。此类数据不得发送到未经批准的第三方模型服务。
-
-## 文献元数据
-
-标题、作者、期刊、年份、DOI、摘要、来源平台、许可证和原文链接。首期系统只保存和处理合法获得的元数据，不等同于拥有论文全文版权。
-
-## 开放全文
-
-由来源平台明确以开放许可提供、且许可允许当前处理方式的全文。是否可缓存、改编或再分发，以文章实际许可证为准。
-
-## LLM 选型
-
-针对中文体育教育、科研分析、报告生成和敏感数据边界，对候选大语言模型在中文质量、私有化能力、工具调用、成本和可审计性上的比较，不等同于选择一个业务智能体。
-
-## 科研检索功能
-
-基于合法文献元数据接口完成检索词扩展、去重、排序和引用整理；不负责突破访问控制或获取未授权全文。
-=======
-# {{PROJECT_NAME}}
+# sport-clone
 
 > Domain glossary / unified language for this project. Keep this file limited
 > to terms and avoided synonyms. Requirements belong in specs/issues; durable
@@ -45,4 +22,3 @@ evidence contract.
 _Avoid_: Test case, Scenario (when interchangeable)
 
 -->
->>>>>>> origin/main
