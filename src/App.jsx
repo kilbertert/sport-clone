@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   Activity,
   BarChart3,
@@ -179,7 +179,8 @@ function App() {
     setPath('/dashboard')
   }
 
-  const context = { navigate, notify: (message, type = 'success') => setToast({ message, type }) }
+  const notify = useCallback((message, type = 'success') => setToast({ message, type }), [])
+  const context = { navigate, notify }
 
   return (
     <AppContext.Provider value={context}>
